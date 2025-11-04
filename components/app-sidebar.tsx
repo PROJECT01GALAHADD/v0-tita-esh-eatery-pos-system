@@ -1,17 +1,6 @@
 "use client"
 
-import {
-  BarChart3,
-  Database,
-  ShoppingCart,
-  MenuSquare,
-  CreditCard,
-  Warehouse,
-  ChefHat,
-  Lock,
-  LogOut,
-  User,
-} from "lucide-react"
+import { BarChart3, Database, ShoppingCart, MenuSquare, CreditCard, Warehouse, Lock, LogOut, User } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +18,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useAuth } from "./auth-provider"
+import Image from "next/image"
 
 // Define permissions for each role
 const rolePermissions = {
@@ -106,13 +96,25 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-2">
-          <ChefHat className="h-6 w-6" />
-          <span className="font-semibold">Restaurant POS</span>
+        <div className="flex items-center gap-3 px-4 py-2">
+          <div className="relative w-10 h-10 flex-shrink-0">
+            <Image
+              src="/tita-esh-logo.png"
+              alt="Tita Esh Eatery Logo"
+              width={40}
+              height={40}
+              className="rounded-full"
+              priority
+            />
+          </div>
+          <div className="flex-1">
+            <span className="font-bold text-sm text-red-700">Tita Esh</span>
+            <span className="block text-xs text-green-700 font-semibold">POS System</span>
+          </div>
         </div>
 
         {/* User Role Switcher - Demo Only */}
-        <div className="px-4 py-2 border-t">
+        <div className="px-4 py-2 border-t border-yellow-200">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
