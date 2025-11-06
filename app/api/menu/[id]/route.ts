@@ -6,7 +6,7 @@ type PatchBody = {
   price?: number
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: any) {
   try {
     const id = params.id
     const body = (await req.json()) as PatchBody
@@ -33,4 +33,3 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: e.message ?? "Server error" }, { status: 500 })
   }
 }
-

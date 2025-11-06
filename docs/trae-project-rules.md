@@ -16,6 +16,52 @@
 
 ---
 
+## User Roles and Accounts (RBAC)
+
+We enforce role-based access across the app. Supported roles in the system:
+
+- Admin: Full access. Can manage users, configuration, and view all dashboards.
+- Manager: Access to management dashboards and reports, can oversee POS and kitchen activity.
+- Cashier/Waiter: Access to POS screens and order creation/checkout flows.
+- Kitchen: Access to Kitchen screen to view and update order preparation status.
+
+Key rules:
+- Gate UI routes based on role. For example:
+  - `/app/pos` → Cashier/Waiter
+  - `/app/kitchen` → Kitchen
+  - `/app` dashboard → Manager and Admin
+- Authentication: Basic username/password via Users table (migrating to Supabase Auth as needed).
+- Ensure at least one Admin exists in production; audit on startup or via admin panel.
+- Enforce RBAC checks server-side in route handlers and client-side in components.
+- Source of truth for RBAC helpers lives in `lib/acl.ts`.
+
+User management API:
+- `app/api/users/route.ts` supports listing and creating users with roles: `manager`, `cashier_waiter`, `kitchen`.
+- Login flow at `app/api/auth/login/route.ts` validates credentials and returns role for client gating.
+
+Kitchen and POS screens:
+- Kitchen screen at `/app/kitchen` reflects incoming orders and preparation updates.
+- POS flow at `/app/pos` facilitates product selection, cart, and checkout.
+
+---
+
+## Next.js Telemetry and Build Checks
+
+- Next.js collects anonymous telemetry; details: https://nextjs.org/telemetry.
+- To opt out, set environment variable `NEXT_TELEMETRY_DISABLED=1` (recommended for production), or run `npx next telemetry disable` locally.
+- Production builds enforce lint and type checks. Fix invalid route handler signatures:
+  - Route handlers must export HTTP methods as functions with `(request: Request, context?: { params: Record<string, string> })`.
+  - Avoid over-specific TypeScript types on the second argument that conflict with Next.js validation.
+  - Example dynamic route handler signature:
+    ```ts
+    export async function PATCH(req: Request, { params }: any) {
+      const id = params.id
+      // ...
+    }
+    ```
+
+---
+
 ## Supabase Development Workflow
 
 ### Database Operations
@@ -799,4 +845,3 @@ npx supabase db push --project-ref jswwbhntjigffzpgyhah
 
 ## Notes
 - This document mirrors local Trae rules so the team can review them in GitHub. The authoritative local file remains at `.trae/rules/project_rules.md` and should not be committed.
-
