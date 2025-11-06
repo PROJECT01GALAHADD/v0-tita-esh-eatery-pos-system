@@ -171,7 +171,7 @@ export default function DailyOrdersPage() {
                         </div>
                         <div>
                           <Label htmlFor="waiter">Waiter</Label>
-                          <Select defaultValue={user.role === "waiter" ? user.name : undefined}>
+                          <Select defaultValue={user?.role === "cashier_waiter" ? user?.name : undefined}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select waiter" />
                             </SelectTrigger>

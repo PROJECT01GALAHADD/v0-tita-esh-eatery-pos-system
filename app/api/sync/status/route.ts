@@ -1,5 +1,6 @@
 import { pingMongo } from "@/lib/mongodb"
 import { nocodbTables } from "@/lib/nocodb"
+import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
@@ -17,5 +18,5 @@ export async function GET() {
     return acc
   }, {})
 
-  return Response.json({ status: "ok", mongoOk, env, configuredTables })
+  return NextResponse.json({ status: "ok", mongoOk, env, configuredTables })
 }

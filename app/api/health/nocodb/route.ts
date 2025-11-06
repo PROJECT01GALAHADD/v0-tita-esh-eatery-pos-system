@@ -1,4 +1,5 @@
 import { nocodbMcpPing } from "@/lib/nocodb"
+import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
@@ -10,10 +11,7 @@ export async function GET() {
     NOCO_BASE_ID: process.env.NOCO_BASE_ID || null,
   }
   if (mcp.ok) {
-    return Response.json({ status: "ok", mcp, env })
+    return NextResponse.json({ status: "ok", mcp, env })
   }
-  return new Response(
-    JSON.stringify({ status: "error", mcp, env }),
-    { status: 500, headers: { "content-type": "application/json" } }
-  )
+  return NextResponse.json({ status: "error", mcp, env }, { status: 500 })
 }
