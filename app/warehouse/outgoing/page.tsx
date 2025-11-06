@@ -115,7 +115,17 @@ export default function OutgoingStockPage() {
   const [quantity, setQuantity] = useState("")
   const [unitPrice, setUnitPrice] = useState("")
 
-  if (!user) return null
+  // Restrict Warehouse Outgoing to administrator, manager, and kitchen roles
+  if (!user || !["administrator", "manager", "kitchen"].includes(user.role)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="text-muted-foreground">You don't have permission to access this page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const calculateTotal = () => {
     const qty = Number.parseFloat(quantity) || 0
@@ -158,7 +168,7 @@ export default function OutgoingStockPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Outgoing Stock</h2>
                 <p className="text-muted-foreground">Track and manage stock issued to departments</p>
               </div>
-              {(user.role === "administrator" || user.role === "manager" || user.role === "chef") && (
+              {["administrator", "manager", "kitchen"].includes(user.role) && (
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>

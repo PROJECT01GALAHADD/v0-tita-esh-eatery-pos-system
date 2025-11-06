@@ -9,39 +9,37 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
+// Demo accounts UI removed; real accounts are auto-seeded
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => boolean
+  onLoginAction: (username: string, password: string) => Promise<boolean>
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage({ onLoginAction }: LoginPageProps) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (onLogin(username, password)) {
+    const ok = await onLoginAction(username, password)
+    if (ok) {
       setError("")
     } else {
       setError("Invalid username or password")
     }
   }
 
-  const demoAccounts = [
-    { username: "admin", password: "admin123", role: "Administrator" },
-    { username: "cashier", password: "cash123", role: "Cashier" },
-    { username: "waiter", password: "wait123", role: "Waiter" },
-    { username: "chef", password: "chef123", role: "Chef" },
-    { username: "manager", password: "mgr123", role: "Manager" },
-  ]
+  // Real accounts are auto-created on first load.
+  // Default usernames/passwords:
+  // admin/admin123, manager/mgr123, cashierwaiter/cw123, kitchen/kitchen123
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-500 via-yellow-400 to-yellow-300 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-red-500 via-yellow-400 to-yellow-300 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8">
-        <Card className="w-full shadow-xl border-green-200">
-          <CardHeader className="text-center bg-gradient-to-b from-white to-green-50">
+        <Card className="w-full shadow-xl border-green-200 md:col-span-2">
+          <CardHeader className="text-center bg-linear-to-b from-white to-green-50">
             <div className="mx-auto w-20 h-20 mb-4 relative">
               <Image
                 src="/tita-esh-logo.png"
@@ -105,50 +103,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 Sign In
               </Button>
             </form>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-xl border-green-200">
-          <CardHeader className="bg-gradient-to-b from-white to-yellow-50">
-            <CardTitle className="text-lg text-red-700 font-bold">Demo Accounts</CardTitle>
-            <CardDescription className="text-green-700">
-              Use these accounts to test different user roles
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              {demoAccounts.map((account) => (
-                <div
-                  key={account.username}
-                  className="p-3 border border-yellow-200 rounded-lg cursor-pointer hover:bg-yellow-50 transition-colors"
-                  onClick={() => {
-                    setUsername(account.username)
-                    setPassword(account.password)
-                  }}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold text-red-700">{account.role}</p>
-                      <p className="text-sm text-gray-600">
-                        {account.username} / {account.password}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-300 text-red-600 hover:bg-red-50 bg-transparent"
-                    >
-                      Use
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm text-green-800 font-semibold">
-                <strong>Lock Screen PIN:</strong> 1234
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

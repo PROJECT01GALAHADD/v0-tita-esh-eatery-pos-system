@@ -22,6 +22,8 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { useAuth } from "@/components/auth-provider"
+import { hasAccess } from "@/lib/acl"
+import { AccessDenied } from "@/components/access-denied"
 
 const products = [
   { id: 1, name: "Rice", type: "Raw Material", unit: "kg", price: 2.5, stock: 150, category: "Grains" },
@@ -42,16 +44,9 @@ export default function ProductsPage() {
   const [selectedType, setSelectedType] = useState("All")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-  // Check permissions - data management accessible by administrator and manager only
-  if (!user || !["administrator", "manager"].includes(user.role)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    )
+  // Centralized ACL check
+  if (!hasAccess(user, "data")) {
+    return <AccessDenied />
   }
 
   const filteredProducts = products.filter((product) => {

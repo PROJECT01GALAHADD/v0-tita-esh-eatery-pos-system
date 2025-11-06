@@ -1,0 +1,22 @@
+import { createClient } from "@supabase/supabase-js"
+
+// Client-side Supabase (anonymous): use NEXT_PUBLIC_ keys only
+export function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anonKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY")
+  }
+  return createClient(url, anonKey)
+}
+
+// Server-side Supabase (service role): use privileged key for API routes only
+export function getSupabaseServer() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error("Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY")
+  }
+  return createClient(url, serviceKey)
+}
+

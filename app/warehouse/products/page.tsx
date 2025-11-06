@@ -67,8 +67,8 @@ const warehouseProducts = [
 export default function WarehouseProductsPage() {
   const { user } = useAuth()
 
-  // Check permissions - warehouse accessible by administrator, manager, chef
-  if (!user || !["administrator", "manager", "chef"].includes(user.role)) {
+  // Check permissions - warehouse accessible by administrator, manager, kitchen
+  if (!user || !["administrator", "manager", "kitchen"].includes(user.role)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

@@ -8,6 +8,13 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { useAuth } from "@/components/auth-provider"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { TrendingUp, TrendingDown, DollarSign, Package, ShoppingCart, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { useEffect, useState } from "react"
+import { getSupabaseClient } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 
 const revenueData = [
   { month: "Jan", revenue: 45000, expenses: 32000 },
@@ -36,13 +43,81 @@ const dishSalesData = [
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const router = useRouter()
+  const [stats, setStats] = useState<{ totalOrders: number; totalRevenue: number; activeWaiters: number }>({ totalOrders: 0, totalRevenue: 0, activeWaiters: 0 })
+  const [mName, setMName] = useState("")
+  const [mPrice, setMPrice] = useState("")
+  const [mCategory, setMCategory] = useState("")
+  const [mAvailable, setMAvailable] = useState(true)
+  const [mSubmitting, setMSubmitting] = useState(false)
+  const [mError, setMError] = useState<string | null>(null)
+
+  const submitMenuItem = async () => {
+    if (mSubmitting) return
+    setMSubmitting(true)
+    setMError(null)
+    try {
+      const res = await fetch("/api/menu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: mName, price: Number(mPrice), category: mCategory, is_available: mAvailable }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || "Failed to create item")
+      setMName("")
+      setMPrice("")
+      setMCategory("")
+      setMAvailable(true)
+    } catch (e: any) {
+      setMError(e?.message || "Failed to create item")
+    } finally {
+      setMSubmitting(false)
+    }
+  }
+
+  // Realtime: load stats and subscribe to orders changes
+  useEffect(() => {
+    let channel: ReturnType<ReturnType<typeof getSupabaseClient>["channel"]> | null = null
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/stats", { cache: "no-store" })
+        const json = await res.json()
+        if (!res.ok) throw new Error(json?.error || "Failed to load stats")
+        setStats(json)
+      } catch (e) {
+        // ignore
+      }
+    }
+    loadStats()
+    try {
+      const supa = getSupabaseClient()
+      channel = supa.channel("orders-realtime").on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => {
+          loadStats()
+        }
+      )
+      channel.subscribe()
+    } catch (e) {}
+    return () => {
+      channel?.unsubscribe()
+    }
+  }, [])
+
+  // Redirect kitchen users to Kitchen Screen by default
+  useEffect(() => {
+    if (user?.role === "kitchen") {
+      router.replace("/kitchen")
+    }
+  }, [user, router])
 
   if (!user) return null
 
   // Role-based dashboard content
   const getDashboardContent = () => {
     switch (user.role) {
-      case "waiter":
+      case "cashier_waiter":
         return (
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -67,7 +142,7 @@ export default function Dashboard() {
             </div>
           </div>
         )
-      case "chef":
+      case "kitchen":
         return (
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
@@ -101,7 +176,7 @@ export default function Dashboard() {
             </div>
           </div>
         )
-      case "cashier":
+      case "cashier_waiter":
         return (
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
@@ -147,7 +222,7 @@ export default function Dashboard() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$67,000</div>
+                  <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
                   <p className="text-xs text-muted-foreground">
                     <TrendingUp className="inline h-3 w-3 text-green-500" /> +12.5% from last month
                   </p>
@@ -173,7 +248,7 @@ export default function Dashboard() {
                   <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1,234</div>
+                  <div className="text-2xl font-bold">{stats.totalOrders}</div>
                   <p className="text-xs text-muted-foreground">
                     <TrendingUp className="inline h-3 w-3 text-green-500" /> +15.3% from last month
                   </p>
@@ -186,7 +261,7 @@ export default function Dashboard() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-2xl font-bold">{stats.activeWaiters}</div>
                   <p className="text-xs text-muted-foreground">
                     <TrendingDown className="inline h-3 w-3 text-red-500" /> -2 from last month
                   </p>
@@ -240,6 +315,40 @@ export default function Dashboard() {
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Admin: Quick Menu Creator */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Create Menu Item</CardTitle>
+                  <CardDescription>Add a new item to the menu</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {mError && <p className="text-sm text-red-600">{mError}</p>}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="menu-name">Name</Label>
+                      <Input id="menu-name" value={mName} onChange={(e) => setMName(e.target.value)} placeholder="e.g. Plov" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="menu-price">Price</Label>
+                      <Input id="menu-price" value={mPrice} onChange={(e) => setMPrice(e.target.value)} placeholder="e.g. 9.99" />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="menu-category">Category</Label>
+                      <Input id="menu-category" value={mCategory} onChange={(e) => setMCategory(e.target.value)} placeholder="e.g. Main Dishes" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch id="menu-available" checked={mAvailable} onCheckedChange={(c) => setMAvailable(c)} />
+                      <Label htmlFor="menu-available">Available</Label>
+                    </div>
+                  </div>
+                  <Button onClick={submitMenuItem} disabled={mSubmitting || !mName || !mCategory || !mPrice}>
+                    {mSubmitting ? "Saving..." : "Add Item"}
+                  </Button>
                 </CardContent>
               </Card>
             </div>

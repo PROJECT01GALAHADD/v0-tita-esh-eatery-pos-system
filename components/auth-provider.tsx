@@ -4,7 +4,7 @@ import { createContext, useContext, useState, type ReactNode } from "react"
 import { LockScreen } from "./lock-screen"
 import { LoginPage } from "./login-page"
 
-type UserRole = "administrator" | "cashier" | "waiter" | "chef" | "manager"
+type UserRole = "administrator" | "manager" | "cashier_waiter" | "kitchen"
 
 interface User {
   id: string
@@ -16,38 +16,25 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLocked: boolean
-  login: (username: string, password: string) => boolean
+  login: (username: string, password: string) => Promise<boolean>
   logout: () => void
   lock: () => void
   unlock: (pin: string) => boolean
-  switchRole: (role: UserRole) => void
+  listUsers: () => Promise<Array<Pick<User, "id" | "username" | "name" | "role">>>
+  createUser: (params: { username: string; name: string; role: UserRole; password: string }) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Demo users for different roles
-const demoUsers: Record<string, { password: string; user: User }> = {
-  admin: {
-    password: "admin123",
-    user: { id: "1", username: "admin", role: "administrator", name: "Admin User" },
-  },
-  cashier: {
-    password: "cash123",
-    user: { id: "2", username: "cashier", role: "cashier", name: "John Cashier" },
-  },
-  waiter: {
-    password: "wait123",
-    user: { id: "3", username: "waiter", role: "waiter", name: "Jane Waiter" },
-  },
-  chef: {
-    password: "chef123",
-    user: { id: "4", username: "chef", role: "chef", name: "Mike Chef" },
-  },
-  manager: {
-    password: "mgr123",
-    user: { id: "5", username: "manager", role: "manager", name: "Sarah Manager" },
-  },
+type StoredAccount = {
+  id: string
+  username: string
+  name: string
+  role: UserRole
+  password: string
 }
+
+const ACCOUNTS_KEY = "titaesh:accounts" // no longer used; kept for backward compatibility
 
 const LOCK_PIN = "1234"
 
@@ -55,14 +42,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLocked, setIsLocked] = useState(false)
 
-  const login = (username: string, password: string): boolean => {
-    const userData = demoUsers[username.toLowerCase()]
-    if (userData && userData.password === password) {
-      setUser(userData.user)
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json?.user) return false
+      setUser(json.user)
       setIsLocked(false)
       return true
+    } catch {
+      return false
     }
-    return false
   }
 
   const logout = () => {
@@ -82,9 +76,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false
   }
 
-  const switchRole = (role: UserRole) => {
-    if (user) {
-      setUser({ ...user, role })
+  const listUsers = async () => {
+    try {
+      const res = await fetch("/api/users", { cache: "no-store" })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || "Failed to load users")
+      return (json.users || []) as Array<Pick<User, "id" | "username" | "name" | "role">>
+    } catch {
+      return []
+    }
+  }
+
+  const createUser: AuthContextType["createUser"] = async ({ username, name, role, password }) => {
+    if (!user || !["administrator", "manager"].includes(user.role)) {
+      return { success: false, error: "Only Admin/Manager can create users" }
+    }
+    // Allow manager creation for administrators via server route; client restricts to cashier_waiter/kitchen by default UI
+    if (!["cashier_waiter", "kitchen", "manager"].includes(role)) {
+      return { success: false, error: "Invalid role" }
+    }
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, name, role, password }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error || "Failed to create user")
+      return { success: true }
+    } catch (e: any) {
+      return { success: false, error: e.message || "Failed to create user" }
     }
   }
 
@@ -95,11 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Show login page if not authenticated
   if (!user) {
-    return <LoginPage onLogin={login} />
+    return <LoginPage onLoginAction={async (username, password) => await login(username, password)} />
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLocked, login, logout, lock, unlock, switchRole }}>
+    <AuthContext.Provider value={{ user, isLocked, login, logout, lock, unlock, listUsers, createUser }}>
       {children}
     </AuthContext.Provider>
   )

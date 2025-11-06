@@ -6,137 +6,127 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { AppSidebar } from "@/components/app-sidebar"
 import { useAuth } from "@/components/auth-provider"
+import { hasAccess } from "@/lib/acl"
+import { AccessDenied } from "@/components/access-denied"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Star, Clock, DollarSign } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const menuItems = [
-  {
-    id: 1,
-    name: "Plov (Osh)",
-    description: "Traditional Uzbek rice dish with meat, carrots, and spices",
-    price: 12.0,
-    category: "Main Course",
-    preparationTime: 25,
-    rating: 4.8,
-    isAvailable: true,
-    isPopular: true,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 2,
-    name: "Lagman",
-    description: "Hand-pulled noodles with vegetables and meat in savory broth",
-    price: 10.0,
-    category: "Main Course",
-    preparationTime: 20,
-    rating: 4.6,
-    isAvailable: true,
-    isPopular: true,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 3,
-    name: "Mastava",
-    description: "Hearty rice soup with vegetables and meat",
-    price: 8.0,
-    category: "Soup",
-    preparationTime: 15,
-    rating: 4.4,
-    isAvailable: true,
-    isPopular: false,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 4,
-    name: "Beshbarmak",
-    description: "Traditional noodle dish with boiled meat and onions",
-    price: 15.0,
-    category: "Main Course",
-    preparationTime: 30,
-    rating: 4.7,
-    isAvailable: false,
-    isPopular: true,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 5,
-    name: "Manti",
-    description: "Steamed dumplings filled with seasoned meat",
-    price: 9.0,
-    category: "Appetizer",
-    preparationTime: 35,
-    rating: 4.5,
-    isAvailable: true,
-    isPopular: false,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 6,
-    name: "Green Tea",
-    description: "Traditional Uzbek green tea",
-    price: 2.0,
-    category: "Beverages",
-    preparationTime: 5,
-    rating: 4.2,
-    isAvailable: true,
-    isPopular: false,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 7,
-    name: "Fresh Salad",
-    description: "Mixed seasonal vegetables with herbs",
-    price: 5.0,
-    category: "Salad",
-    preparationTime: 10,
-    rating: 4.3,
-    isAvailable: true,
-    isPopular: false,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 8,
-    name: "Mineral Water",
-    description: "Sparkling or still mineral water",
-    price: 1.5,
-    category: "Beverages",
-    preparationTime: 1,
-    rating: 4.0,
-    isAvailable: true,
-    isPopular: false,
-    image: "/placeholder.svg?height=200&width=300",
-  },
-]
+type MenuItem = {
+  id: string
+  name: string
+  description: string
+  price: number
+  category: string
+  preparationTime: number
+  rating: number
+  isAvailable: boolean
+  isPopular: boolean
+  image?: string
+}
 
 export default function MenuPage() {
   const { user } = useAuth()
 
-  // Check permissions - menu is accessible by administrator, manager, cashier, waiter, chef
-  if (!user || !["administrator", "manager", "cashier", "waiter", "chef"].includes(user.role)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    )
+  // Centralized ACL check
+  if (!hasAccess(user, "menu")) {
+    return <AccessDenied />
   }
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchMenu() {
+      try {
+        setLoading(true)
+        const res = await fetch("/api/menu")
+        const json = await res.json()
+        if (!res.ok) throw new Error(json?.error || "Failed to load menu")
+        setMenuItems(json.items || [])
+      } catch (e: any) {
+        setError(e?.message || "Error loading menu")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMenu()
+  }, [])
+
+  async function handleToggleAvailability(id: string, isAvailable: boolean) {
+    try {
+      // Optimistic update
+      setMenuItems(prev => prev.map(mi => mi.id === id ? { ...mi, isAvailable } : mi))
+      const res = await fetch(`/api/menu/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_available: isAvailable }),
+      })
+      if (!res.ok) {
+        throw new Error((await res.json())?.error || "Failed to update availability")
+      }
+    } catch (e: any) {
+      setError(e?.message || "Failed to update availability")
+      // Revert on error
+      setMenuItems(prev => prev.map(mi => mi.id === id ? { ...mi, isAvailable: !isAvailable } : mi))
+    }
+  }
+
+  // Realtime: refresh menu on changes
+  useEffect(() => {
+    let channel: any = null
+    async function refresh() {
+      try {
+        setLoading(true)
+        const res = await fetch("/api/menu", { cache: "no-store" })
+        const json = await res.json()
+        if (!res.ok) throw new Error(json?.error || "Failed to load menu")
+        setMenuItems(json.items || [])
+      } catch (e: any) {
+        setError(e?.message || "Failed to refresh menu")
+      } finally {
+        setLoading(false)
+      }
+    }
+    try {
+      const { getSupabaseClient } = require("@/lib/supabase")
+      const supa = getSupabaseClient()
+      channel = supa
+        .channel("menu-realtime")
+        .on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => refresh())
+        .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, () => refresh())
+      channel.subscribe()
+    } catch {}
+    return () => {
+      channel?.unsubscribe?.()
+    }
+  }, [])
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "Main Course":
-        return "bg-red-100 text-red-800"
-      case "Soup":
-        return "bg-orange-100 text-orange-800"
-      case "Appetizer":
+      case "All Time Favorite (Short Orders)":
+        return "bg-yellow-100 text-yellow-800"
+      case "Silog Meals":
         return "bg-green-100 text-green-800"
-      case "Salad":
+      case "Busog Meals":
+        return "bg-orange-100 text-orange-800"
+      case "Rice Meal":
+        return "bg-red-100 text-red-800"
+      case "Add On":
         return "bg-blue-100 text-blue-800"
-      case "Beverages":
+      case "Salo-Salo Meals":
         return "bg-purple-100 text-purple-800"
+      case "Combo Plates":
+        return "bg-pink-100 text-pink-800"
+      case "Soup":
+        return "bg-teal-100 text-teal-800"
+      case "Snacks":
+        return "bg-indigo-100 text-indigo-800"
+      case "Desserts":
+        return "bg-fuchsia-100 text-fuchsia-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -144,7 +134,9 @@ export default function MenuPage() {
 
   const availableItems = menuItems.filter((item) => item.isAvailable).length
   const popularItems = menuItems.filter((item) => item.isPopular).length
-  const averagePrice = menuItems.reduce((sum, item) => sum + item.price, 0) / menuItems.length
+  const averagePrice = menuItems.length
+    ? menuItems.reduce((sum, item) => sum + item.price, 0) / menuItems.length
+    : 0
 
   return (
     <SidebarProvider>
@@ -160,7 +152,7 @@ export default function MenuPage() {
           <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div>
               <h2 className="text-3xl font-bold tracking-tight">Menu Management</h2>
-              <p className="text-muted-foreground">Manage your restaurant menu items and availability</p>
+              <p className="text-muted-foreground">Menu data now loaded from Supabase via API</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-4">
@@ -203,6 +195,12 @@ export default function MenuPage() {
               </Card>
             </div>
 
+            {loading && (
+              <div className="text-sm text-muted-foreground">Loading menu…</div>
+            )}
+            {error && (
+              <div className="text-sm text-red-600">{error}</div>
+            )}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {menuItems.map((item) => (
                 <Card key={item.id} className={`relative ${!item.isAvailable ? "opacity-60" : ""}`}>
@@ -250,7 +248,11 @@ export default function MenuPage() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <Switch checked={item.isAvailable} id={`available-${item.id}`} />
+                        <Switch
+                          checked={item.isAvailable}
+                          id={`available-${item.id}`}
+                          onCheckedChange={(checked) => handleToggleAvailability(item.id, checked)}
+                        />
                         <label htmlFor={`available-${item.id}`} className="text-sm font-medium">
                           Available
                         </label>

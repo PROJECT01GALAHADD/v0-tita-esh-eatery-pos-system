@@ -26,62 +26,139 @@ import { useAuth } from "@/components/auth-provider"
 const dishPricing = [
   {
     id: 1,
-    dishName: "Plov (Osh)",
-    category: "Main Course",
-    basePrice: 12.0,
-    currentPrice: 12.0,
-    costPrice: 8.5,
-    profitMargin: 41.2,
+    dishName: "Pansit bihon",
+    category: "All Time Favorite (Short Orders)",
+    basePrice: 120.0,
+    currentPrice: 120.0,
+    costPrice: 90.0,
+    profitMargin: 25.0,
     lastUpdated: "2024-01-15",
     status: "Active",
   },
   {
     id: 2,
-    dishName: "Lagman",
-    category: "Main Course",
-    basePrice: 10.0,
-    currentPrice: 10.0,
-    costPrice: 7.2,
-    profitMargin: 28.0,
+    dishName: "Pansit canton",
+    category: "All Time Favorite (Short Orders)",
+    basePrice: 150.0,
+    currentPrice: 150.0,
+    costPrice: 112.5,
+    profitMargin: 25.0,
     lastUpdated: "2024-01-15",
     status: "Active",
   },
   {
     id: 3,
-    dishName: "Mastava",
-    category: "Soup",
-    basePrice: 8.0,
-    currentPrice: 8.0,
-    costPrice: 5.5,
-    profitMargin: 31.3,
-    lastUpdated: "2024-01-14",
+    dishName: "Pansit mix",
+    category: "All Time Favorite (Short Orders)",
+    basePrice: 150.0,
+    currentPrice: 150.0,
+    costPrice: 112.5,
+    profitMargin: 25.0,
+    lastUpdated: "2024-01-15",
     status: "Active",
   },
   {
     id: 4,
-    dishName: "Beshbarmak",
-    category: "Main Course",
-    basePrice: 15.0,
-    currentPrice: 15.0,
-    costPrice: 11.0,
-    profitMargin: 26.7,
-    lastUpdated: "2024-01-14",
-    status: "Inactive",
+    dishName: "Palabok",
+    category: "All Time Favorite (Short Orders)",
+    basePrice: 130.0,
+    currentPrice: 130.0,
+    costPrice: 97.5,
+    profitMargin: 25.0,
+    lastUpdated: "2024-01-15",
+    status: "Active",
   },
   {
     id: 5,
-    dishName: "Manti",
-    category: "Appetizer",
-    basePrice: 9.0,
-    currentPrice: 9.0,
-    costPrice: 6.0,
-    profitMargin: 33.3,
-    lastUpdated: "2024-01-13",
+    dishName: "Spaghetti",
+    category: "All Time Favorite (Short Orders)",
+    basePrice: 130.0,
+    currentPrice: 130.0,
+    costPrice: 97.5,
+    profitMargin: 25.0,
+    lastUpdated: "2024-01-15",
     status: "Active",
   },
 ]
 
-const dishes = ["Plov (Osh)", "Lagman", "Mastava", "Beshbarmak", "Manti", "Samsa", "Shurpa", "Norin"]
+const dishes = [
+  // All Time Favorite (Short Orders)
+  "Pansit bihon",
+  "Pansit canton",
+  "Pansit mix",
+  "Palabok",
+  "Spaghetti",
+  "Carbonara",
+  "Pork Lomi",
+  "Mami beef",
+  "Mami chicken",
+  // Silog Meals
+  "Tapsilog",
+  "Porksilog",
+  "Chicksilog",
+  "Tosilog",
+  "Longsilog",
+  "Bangsilog",
+  "Cornedsilog",
+  "Hotsilog",
+  "Dangsilog",
+  "Adobosilog",
+  "Lechonsilog",
+  // Busog Meals
+  "BM1: rice, shanghai, chicken",
+  "BM2: spaghetti, chicken, rice",
+  "BM3: spaghetti, chicken, fries",
+  "BM4: pizza, chicken, spaghetti",
+  "BM5: palabok, chicken, rice",
+  "BM6: carbonara, garlic bread, fries",
+  "BM7: spaghetti, cheeseburger",
+  "BM8: fries, cheeseburger",
+  "BM9: fries, 2 pcs chicken",
+  "BM10: 2 pcs shanghai, bihon, bread",
+  // Rice Meal
+  "Burgersteak",
+  "Shanghai (4 pcs) with rice",
+  "Chaopan with shanghai (4 pcs)",
+  "Chaopan with siomai (4 pcs)",
+  "Chaopan with spam (2 pcs)",
+  "2 pcs Chicken with rice",
+  // Add On
+  "Plain rice",
+  "Garlic rice",
+  "Egg",
+  "Cheese",
+  // Salo-Salo Meals
+  "SSM1: 3 pcs burger, 3 pcs chicken, fries",
+  "SSM2: 2 order pancit bihon, 12 pcs shanghai, 1 platter plain rice",
+  "SSM3: 4 pcs chicken, 8 pcs shanghai, 1 platter plain rice",
+  "SSM4: 10 pcs shanghai, 10 pcs siomai, 1 platter chaopan",
+  // Combo Plates
+  "Bihon with chicken",
+  "Canton with chicken",
+  "Pancit mix with chicken",
+  "Palabok with chicken",
+  "Spaghetti with chicken",
+  "Carbonara with chicken",
+  // Soup
+  "Crab & corn",
+  "Nido soup",
+  "Cream of mushroom",
+  // Snacks
+  "Clubhouse",
+  "Cheeseburger",
+  "Hamburger",
+  "Ham & cheese",
+  "Tuna sandwich",
+  "Chicken sandwich",
+  "Egg sandwich",
+  "French fries",
+  // Desserts
+  "Halo-halo",
+  "Mais con yelo",
+  "Banana con yelo",
+  "Special halo-halo",
+  "Ube macapuno",
+]
 
 export default function FoodPricingPage() {
   const { user } = useAuth()
@@ -89,8 +166,17 @@ export default function FoodPricingPage() {
   const [selectedDish, setSelectedDish] = useState("")
   const [basePrice, setBasePrice] = useState("")
   const [costPrice, setCostPrice] = useState("")
-
-  if (!user) return null
+  // Restrict Data Management to administrator and manager roles only
+  if (!user || !["administrator", "manager"].includes(user.role)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="text-muted-foreground">You don't have permission to access this page.</p>
+        </div>
+      </div>
+    )
+  }
 
   const calculateProfitMargin = () => {
     const base = Number.parseFloat(basePrice) || 0

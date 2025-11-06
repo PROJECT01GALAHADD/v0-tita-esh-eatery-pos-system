@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart3, Database, ShoppingCart, MenuSquare, CreditCard, Warehouse, Lock, LogOut, User } from "lucide-react"
+import { BarChart3, Database, ShoppingCart, MenuSquare, CreditCard, Warehouse, Lock, LogOut, User, MonitorSmartphone } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -15,18 +15,17 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useAuth } from "./auth-provider"
 import Image from "next/image"
 
 // Define permissions for each role
 const rolePermissions = {
-  administrator: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers"],
-  manager: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers"],
-  cashier: ["dashboard", "orders", "cash-registers", "menu"],
-  waiter: ["orders", "menu"],
-  chef: ["orders", "menu", "warehouse"],
+  administrator: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers", "pos"],
+  manager: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers", "pos"],
+  cashier_waiter: ["dashboard", "orders", "cash-registers", "menu", "pos"],
+  // Kitchen role: limited to dashboard overview, kitchen screen, inventory, menu
+  kitchen: ["dashboard", "kitchen", "menu", "warehouse"],
 }
 
 const menuItems = [
@@ -42,14 +41,11 @@ const menuItems = [
     permission: "data",
     items: [
       { title: "Products", url: "/data/products" },
-      { title: "National Catalog", url: "/data/catalog" },
-      { title: "Product Groups", url: "/data/groups" },
       { title: "Food Pricing", url: "/data/pricing" },
       { title: "Service Locations", url: "/data/locations" },
-      { title: "Departments", url: "/data/departments" },
       { title: "Cash Registers", url: "/data/registers" },
-      { title: "Service Pricing", url: "/data/service-registering" },
       { title: "Waiters", url: "/data/waiters" },
+      { title: "Users", url: "/data/users" },
     ],
   },
   {
@@ -61,6 +57,18 @@ const menuItems = [
       { title: "Incoming", url: "/warehouse/incoming" },
       { title: "Outgoing", url: "/warehouse/outgoing" },
     ],
+  },
+  {
+    title: "POS",
+    icon: MonitorSmartphone,
+    url: "/pos",
+    permission: "pos",
+  },
+  {
+    title: "Kitchen Screen",
+    icon: MonitorSmartphone,
+    url: "/kitchen",
+    permission: "kitchen",
   },
   {
     title: "Menu",
@@ -86,7 +94,7 @@ const menuItems = [
 ]
 
 export function AppSidebar() {
-  const { user, lock, logout, switchRole } = useAuth()
+  const { user, lock, logout } = useAuth()
 
   if (!user) return null
 
@@ -97,7 +105,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-3 px-4 py-2">
-          <div className="relative w-10 h-10 flex-shrink-0">
+          <div className="relative w-10 h-10 shrink-0">
             <Image
               src="/tita-esh-logo.png"
               alt="Tita Esh Eatery Logo"
@@ -113,27 +121,14 @@ export function AppSidebar() {
           </div>
         </div>
 
-        {/* User Role Switcher - Demo Only */}
         <div className="px-4 py-2 border-t border-yellow-200">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="text-sm font-medium">{user.name}</span>
             </div>
-            <Select value={user.role} onValueChange={switchRole}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="administrator">Administrator</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="cashier">Cashier</SelectItem>
-                <SelectItem value="waiter">Waiter</SelectItem>
-                <SelectItem value="chef">Chef</SelectItem>
-              </SelectContent>
-            </Select>
             <Badge variant="outline" className="text-xs">
-              Demo Role Switcher
+              Signed in as {user.role.replace("_", "/")}
             </Badge>
           </div>
         </div>

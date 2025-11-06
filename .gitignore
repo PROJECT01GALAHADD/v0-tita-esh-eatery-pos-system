@@ -25,4 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.env
+
+# external templates/designs (ignored)
+/external/*
+!/external/.gitkeep
+!/external/README.md

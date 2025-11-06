@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === "production"
+
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Fail builds in Production to avoid silently shipping type errors
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: !isProd,
+  },
+  // Lint during Production builds; skip in dev to speed up iteration
+  eslint: {
+    ignoreDuringBuilds: !isProd,
   },
   images: {
     unoptimized: true,

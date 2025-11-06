@@ -11,6 +11,8 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { useAuth } from "@/components/auth-provider"
+import { hasAccess } from "@/lib/acl"
+import { AccessDenied } from "@/components/access-denied"
 
 const cashRegisters = [
   {
@@ -70,16 +72,9 @@ const dailyTransactions = [
 export default function CashRegistersPage() {
   const { user } = useAuth()
 
-  // Check permissions - cash registers accessible by administrator, manager, cashier
-  if (!user || !["administrator", "manager", "cashier"].includes(user.role)) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    )
+  // Centralized ACL check
+  if (!hasAccess(user, "cash_registers")) {
+    return <AccessDenied />
   }
 
   const getStatusColor = (status: string) => {

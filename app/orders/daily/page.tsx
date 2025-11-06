@@ -83,8 +83,8 @@ export default function DailyOrdersPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
 
-  // Check permissions - orders accessible by administrator, manager, cashier, waiter
-  if (!user || !["administrator", "manager", "cashier", "waiter"].includes(user.role)) {
+  // Check permissions - orders accessible by administrator, manager, cashier_waiter, kitchen
+  if (!user || !["administrator", "manager", "cashier_waiter", "kitchen"].includes(user.role)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -115,8 +115,8 @@ export default function DailyOrdersPage() {
     }, 0)
   }
 
-  // Filter orders for waiters to show only their orders
-  const filteredOrders = user.role === "waiter" ? orders.filter((order) => order.waiter === user.name) : orders
+  // Filter orders for cashier_waiter to show only their orders
+  const filteredOrders = user.role === "cashier_waiter" ? orders.filter((order) => order.waiter === user.name) : orders
 
   return (
     <SidebarProvider>
@@ -126,7 +126,7 @@ export default function DailyOrdersPage() {
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <h1 className="text-xl font-semibold">Daily Orders {user.role === "waiter" ? "- My Orders" : ""}</h1>
+            <h1 className="text-xl font-semibold">Daily Orders {user.role === "cashier_waiter" ? "- My Orders" : ""}</h1>
           </header>
 
           <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -134,11 +134,10 @@ export default function DailyOrdersPage() {
               <div>
                 <h2 className="text-3xl font-bold tracking-tight">Daily Orders</h2>
                 <p className="text-muted-foreground">
-                  {user.role === "waiter" ? "Manage your assigned orders" : "Manage today's customer orders"}
+                  {user.role === "cashier_waiter" ? "Manage your assigned orders" : "Manage today's customer orders"}
                 </p>
               </div>
-              {(user.role === "waiter" ||
-                user.role === "cashier" ||
+              {(user.role === "cashier_waiter" ||
                 user.role === "administrator" ||
                 user.role === "manager") && (
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -270,9 +269,9 @@ export default function DailyOrdersPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>{user.role === "waiter" ? "My Orders" : "Today's Orders"}</CardTitle>
+                <CardTitle>{user.role === "cashier_waiter" ? "My Orders" : "Today's Orders"}</CardTitle>
                 <CardDescription>
-                  {user.role === "waiter"
+                  {user.role === "cashier_waiter"
                     ? `Orders assigned to ${user.name}`
                     : `All orders for ${new Date().toLocaleDateString()}`}
                 </CardDescription>
@@ -283,7 +282,7 @@ export default function DailyOrdersPage() {
                     <TableRow>
                       <TableHead>Order ID</TableHead>
                       <TableHead>Table</TableHead>
-                      {user.role !== "waiter" && <TableHead>Waiter</TableHead>}
+                      {user.role !== "cashier_waiter" && <TableHead>Waiter</TableHead>}
                       <TableHead>Items</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Status</TableHead>
