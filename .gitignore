@@ -19,6 +19,9 @@ yarn-error.log*
 # env files
 .env*
 
+# trae ide configuration (never commit AI rules)
+.trae/
+
 # vercel
 .vercel
 
