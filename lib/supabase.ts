@@ -19,4 +19,3 @@ export function getSupabaseServer() {
   }
   return createClient(url, serviceKey)
 }
-

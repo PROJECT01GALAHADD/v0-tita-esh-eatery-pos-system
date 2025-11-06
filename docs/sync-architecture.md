@@ -81,4 +81,3 @@ Configure via env:
   - Mongo → Noco: `app/api/sync/mongo-change/route.ts`
   - Noco → Mongo: `app/api/sync/nocodb-webhook/route.ts`
 - Status: `app/api/sync/status/route.ts`
-

@@ -10,4 +10,3 @@ create table if not exists public.cash_registers (
 
 alter table public.cash_registers enable row level security;
 create policy if not exists "cash_registers_select_anon" on public.cash_registers for select using (true);
-

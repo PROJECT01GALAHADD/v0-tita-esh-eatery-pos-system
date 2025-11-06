@@ -10,4 +10,3 @@ alter table public.todos enable row level security;
 -- Allow anonymous read/insert for quickstart testing
 create policy if not exists "todos_select_anon" on public.todos for select using (true);
 create policy if not exists "todos_insert_anon" on public.todos for insert with check (true);
-

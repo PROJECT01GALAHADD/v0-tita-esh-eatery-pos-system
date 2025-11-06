@@ -9,4 +9,3 @@ create table if not exists public.orders (
 
 alter table public.orders enable row level security;
 create policy if not exists "orders_select_anon" on public.orders for select using (true);
-

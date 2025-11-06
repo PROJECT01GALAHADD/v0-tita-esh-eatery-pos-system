@@ -74,4 +74,3 @@ Lock PIN: `1234` (client-only demo; replace in production).
 - Client-side demo auth only; replace with a secure provider in production.
 - Hardcoded demo credentials and PIN should be removed for real deployments.
 - Build strictness should be enforced; remove ignores hiding lint/TS errors.
-

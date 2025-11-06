@@ -10,4 +10,3 @@ create table if not exists public.users (
 
 alter table public.users enable row level security;
 -- No public policies; use service role in server-side API for access
-

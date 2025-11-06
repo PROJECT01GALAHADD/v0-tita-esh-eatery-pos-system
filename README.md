@@ -38,9 +38,9 @@ Continue building your app on:
 
 Example `.env.local`:
 
-```
+\`\`\`
 MONGODB_URI="mongodb+srv://<user>:<password>@<cluster-url>/?retryWrites=true&w=majority"
-```
+\`\`\`
 
 Security notes:
 - Do not commit real credentials. `.env*` is ignored by `.gitignore`.
@@ -74,9 +74,9 @@ This project supports a dual-database architecture: MongoDB as the primary opera
 
 - MongoDB → NocoDB: `POST /api/sync/mongo-change`
   - Use MongoDB Atlas Triggers (recommended) to POST inserts/updates/deletes with payload:
-    ```json
+    \`\`\`json
     { "collection": "waiterOps|chefOrders|cashierTxns", "operation": "insert|update|delete", "document": {"externalId": "...", ...}, "externalId": "..." }
-    ```
+    \`\`\`
 
 - NocoDB → MongoDB: `POST /api/sync/nocodb-webhook`
   - Configure NocoDB automation/webhook for row created/updated/deleted events. Payload must include `data.externalId` for identification.

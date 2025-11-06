@@ -30,4 +30,3 @@ export const collections = {
   chefOrders: "chef_orders",
   cashierTxns: "cashier_txns",
 }
-

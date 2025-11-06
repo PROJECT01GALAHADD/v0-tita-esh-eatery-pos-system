@@ -49,4 +49,3 @@ Use this checklist to guide configuration before implementation. Priorities: Hig
 - [ ] 🟠 Document environment variables (`.env` schema) and configuration instructions.
 - [ ] 🟠 Add minimal unit tests for auth context and permission gating.
 - [ ] 🟢 Add README “Getting Started” with dev/build runbooks.
-

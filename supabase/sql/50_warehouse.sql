@@ -31,4 +31,3 @@ alter table public.warehouse_outgoing enable row level security;
 create policy if not exists "warehouse_products_select_anon" on public.warehouse_products for select using (true);
 create policy if not exists "warehouse_incoming_select_anon" on public.warehouse_incoming for select using (true);
 create policy if not exists "warehouse_outgoing_select_anon" on public.warehouse_outgoing for select using (true);
-

@@ -53,12 +53,12 @@ Kitchen and POS screens:
   - Route handlers must export HTTP methods as functions with `(request: Request, context?: { params: Record<string, string> })`.
   - Avoid over-specific TypeScript types on the second argument that conflict with Next.js validation.
   - Example dynamic route handler signature:
-    ```ts
+    \`\`\`ts
     export async function PATCH(req: Request, { params }: any) {
       const id = params.id
       // ...
     }
-    ```
+    \`\`\`
 
 ---
 
@@ -67,7 +67,7 @@ Kitchen and POS screens:
 ### Database Operations
 
 #### Using Supabase Client (Recommended)
-```typescript
+\`\`\`typescript
 import { createClient } from '@supabase/supabase-js'
 
 // Client-side
@@ -101,20 +101,20 @@ const subscription = supabase
     (payload) => console.log('Change:', payload)
   )
   .subscribe()
-```
+\`\`\`
 
 #### Using Direct SQL (for migrations, complex queries)
-```typescript
+\`\`\`typescript
 const { data, error } = await supabase.rpc('custom_function_name', {
   param1: value1,
   param2: value2
 })
 
 // Or raw SQL via pg client (if needed)
-```
+\`\`\`
 
 #### Authentication Flow
-```typescript
+\`\`\`typescript
 // Sign up
 const { data, error } = await supabase.auth.signUp({
   email: 'user@example.com',
@@ -132,10 +132,10 @@ const { data: { session } } = await supabase.auth.getSession()
 
 // Sign out
 await supabase.auth.signOut()
-```
+\`\`\`
 
 #### Storage Operations
-```typescript
+\`\`\`typescript
 // Upload file
 const { data, error } = await supabase.storage
   .from('receipts')
@@ -150,12 +150,12 @@ const { data, error } = await supabase.storage
 const { data } = supabase.storage
   .from('receipts')
   .getPublicUrl('receipt-123.pdf')
-```
+\`\`\`
 
 ### Migrations and Schema Changes
 
 #### Using Supabase CLI (Recommended)
-```bash
+\`\`\`bash
 # Install Supabase CLI
 npm install -g supabase
 
@@ -176,7 +176,7 @@ supabase db push
 
 # Reset database (careful!)
 supabase db reset
-```
+\`\`\`
 
 #### Manual Migrations via SQL Editor
 1. Go to Supabase Dashboard → SQL Editor
@@ -185,7 +185,7 @@ supabase db reset
 4. Document in `/supabase/migrations/` directory
 
 #### Row Level Security (RLS)
-```sql
+\`\`\`sql
 -- Enable RLS on table
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
@@ -198,12 +198,12 @@ USING (auth.uid() = user_id);
 CREATE POLICY "Authenticated users can create orders"
 ON orders FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
-```
+\`\`\`
 
 ### Testing Database
 
 #### Health Check Endpoint
-```bash
+\`\`\`bash
 # Test Supabase connection
 curl http://localhost:3000/api/health/supabase
 
@@ -213,10 +213,10 @@ curl http://localhost:3000/api/health/supabase
   "database": "connected",
   "timestamp": "2025-01-10T12:00:00Z"
 }
-```
+\`\`\`
 
 #### Local Testing with Supabase CLI
-```bash
+\`\`\`bash
 # Start local Supabase (Docker required)
 supabase start
 
@@ -227,7 +227,7 @@ supabase status
 # Update .env.local to point to local URLs
 NEXT_PUBLIC_SUPABASE_URL="http://localhost:54321"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="<local-anon-key>"
-```
+\`\`\`
 
 ---
 
@@ -247,7 +247,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="<local-anon-key>"
 - Trae configuration is personal and should not be shared in repository
 
 ### 2. **Git Operations**
-```bash
+\`\`\`bash
 # Always check status before operations
 git status
 
@@ -262,7 +262,7 @@ git commit -m "feat: <feature> | fix: <issue> | docs: <update>"
 
 # Push to trigger Vercel deployment
 git push origin main
-```
+\`\`\`
 
 ### 3. **Never Commit These Files**
 - `.env.local` - Contains secrets (Supabase, MongoDB, NocoDB)
@@ -279,7 +279,7 @@ git push origin main
 ## Project Structure
 
 ### Core Directories
-```
+\`\`\`
 /app                  # Next.js 15 App Router (pages, layouts, API routes)
 /components           # React components (UI built with shadcn/ui)
 /hooks               # Custom React hooks
@@ -287,17 +287,17 @@ git push origin main
 /public              # Static assets
 /styles              # Global CSS (Tailwind)
 /supabase            # Supabase migrations and types
-```
+\`\`\`
 
 ### Local-Only Directories (Not in GitHub)
-```
+\`\`\`
 /__tests__           # Jest test suites
 /.trae               # Trae IDE configuration
 /.next               # Next.js build output
 /node_modules        # npm dependencies
 /docs                # Local documentation
 /external            # External templates (ignored except README)
-```
+\`\`\`
 
 ---
 
@@ -323,13 +323,13 @@ git push origin main
 - **Dark Mode**: Support via `next-themes` (class strategy)
 
 ### Component Library (shadcn/ui)
-```bash
+\`\`\`bash
 # Add new components
 npx shadcn@latest add <component-name>
 
 # Components are in /components/ui/
 # Customize in components.json
-```
+\`\`\`
 
 ---
 
@@ -364,18 +364,18 @@ Supabase PostgreSQL replaces MongoDB collections with SQL tables:
 #### Connection Methods
 
 **Direct Connection** (for migrations, admin tasks):
-```
+\`\`\`
 Host: db.jswwbhntjigffzpgyhah.supabase.co
 Port: 5432
 Database: postgres
-```
+\`\`\`
 
 **Pooled Connection** (for application, recommended):
-```
+\`\`\`
 Host: aws-1-ap-southeast-1.pooler.supabase.com
 Port: 6543 (pgBouncer pooling)
 Database: postgres
-```
+\`\`\`
 
 #### Supabase Client
 - **Initialization**: `lib/supabase.ts` or `@supabase/supabase-js`
@@ -416,7 +416,7 @@ Database: postgres
 ### Environment Variables Required
 
 #### Supabase Configuration (.env.local)
-```bash
+\`\`\`bash
 # ============================================
 # SUPABASE CONFIGURATION
 # ============================================
@@ -446,7 +446,7 @@ POSTGRES_HOST="db.jswwbhntjigffzpgyhah.supabase.co"
 POSTGRES_USER="postgres"
 POSTGRES_PASSWORD="VUDxX4RqEgMyxe5W"
 POSTGRES_DATABASE="postgres"
-```
+\`\`\`
 
 #### Quick Start Setup
 1. **Create `.env.local`** in project root
@@ -481,7 +481,7 @@ The sync middleware for MongoDB and NocoDB is **no longer active** after migrati
 ### Supabase Real-time Subscriptions (Replacement)
 Instead of custom sync middleware, use Supabase's built-in real-time features:
 
-```typescript
+\`\`\`typescript
 // Subscribe to table changes
 const channel = supabase
   .channel('schema-db-changes')
@@ -501,7 +501,7 @@ const channel = supabase
 
 // Unsubscribe when done
 channel.unsubscribe()
-```
+\`\`\`
 
 ### Real-time Use Cases
 - **Waiter Dashboard**: Live order updates
@@ -519,17 +519,17 @@ channel.unsubscribe()
 ## Development Commands
 
 ### Setup
-```bash
+\`\`\`bash
 # Install dependencies (respect lock file)
 npm install
 
 # Copy env template
 cp .env.example .env.local
 # Then fill in actual credentials
-```
+\`\`\`
 
 ### Development
-```bash
+\`\`\`bash
 # Start dev server (with HMR)
 npm run dev
 # Opens at http://localhost:3000
@@ -539,28 +539,28 @@ npx tsc --noEmit
 
 # Linting
 npm run lint
-```
+\`\`\`
 
 ### Building
-```bash
+\`\`\`bash
 # Production build
 npm run build
 
 # Test production build locally
 npm run start
-```
+\`\`\`
 
 ### Testing
-```bash
+\`\`\`bash
 # Run Jest tests (if configured)
 npm test
 
 # Watch mode
 npm test -- --watch
-```
+\`\`\`
 
 ### Database Operations
-```bash
+\`\`\`bash
 # Test Supabase connection
 curl http://localhost:3000/api/health/supabase
 
@@ -575,7 +575,7 @@ npx supabase logs --db
 
 # Backup database (via Supabase Dashboard)
 # Settings → Database → Create Backup
-```
+\`\`\`
 
 ---
 
@@ -588,7 +588,7 @@ npx supabase logs --db
 - **Types**: PascalCase with `.types.ts` suffix (`Order.types.ts`)
 
 ### Component Structure
-```typescript
+\`\`\`typescript
 'use client' // Only if needed
 
 import { /* external */ } from 'package'
@@ -615,10 +615,10 @@ export function ComponentName({ props }: Props) {
   // Render
   return <div>...</div>
 }
-```
+\`\`\`
 
 ### API Route Structure
-```typescript
+\`\`\`typescript
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -677,7 +677,7 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-```
+\`\`\`
 
 ---
 
@@ -697,7 +697,7 @@ export async function POST(request: NextRequest) {
 - [ ] Build succeeds locally (`npm run build`)
 
 ### Vercel Configuration
-```bash
+\`\`\`bash
 # Set environment variables in Vercel dashboard
 # Project Settings → Environment Variables
 # Add for: Production, Preview, Development
@@ -707,7 +707,7 @@ Build Command: npm run build
 Output Directory: .next
 Install Command: npm install
 Node Version: 18.x (or 20.x)
-```
+\`\`\`
 
 ### Monitoring Deployments
 - Check Vercel dashboard for build logs
@@ -720,7 +720,7 @@ Node Version: 18.x (or 20.x)
 ## Common Tasks
 
 ### Adding a New Feature
-```bash
+\`\`\`bash
 # 1. Create feature branch (if needed)
 git checkout -b feature/new-feature
 
@@ -733,10 +733,10 @@ git commit -m "feat: add new feature"
 
 # 4. Push to trigger deployment
 git push origin feature/new-feature
-```
+\`\`\`
 
 ### Updating Dependencies
-```bash
+\`\`\`bash
 # Check outdated packages
 npm outdated
 
@@ -748,12 +748,12 @@ npm update
 
 # Always test after updates
 npm run build && npm run dev
-```
+\`\`\`
 
 ### Database Schema Changes
 
 #### Supabase Migrations
-```bash
+\`\`\`bash
 # Create new migration file
 npx supabase migration new add_feature_name
 
@@ -763,10 +763,10 @@ npx supabase migration new add_feature_name
 npx supabase db push
 
 # Or apply via Supabase Dashboard SQL Editor
-```
+\`\`\`
 
 Example migration:
-```sql
+\`\`\`sql
 -- /supabase/migrations/20250110000000_add_order_notes.sql
 
 -- Add notes column to orders table
@@ -780,10 +780,10 @@ CREATE INDEX idx_orders_status ON orders(status);
 CREATE POLICY "Users can view own orders"
 ON orders FOR SELECT
 USING (auth.uid() = user_id);
-```
+\`\`\`
 
 #### Testing Migrations
-```bash
+\`\`\`bash
 # 1. Test locally first (requires Docker)
 npx supabase start
 npx supabase db reset  # Fresh database
@@ -795,12 +795,12 @@ npx supabase migration up
 
 # 3. Apply to production
 npx supabase db push --project-ref jswwbhntjigffzpgyhah
-```
+\`\`\`
 
 ### Debugging
 
 #### Check Logs
-```bash
+\`\`\`bash
 # Local development
 # Logs appear in terminal running `npm run dev`
 
@@ -816,7 +816,7 @@ npx supabase db push --project-ref jswwbhntjigffzpgyhah
 
 # Supabase API Logs
 # View in Supabase Dashboard → Logs → API
-```
+\`\`\`
 
 #### Common Issues
 

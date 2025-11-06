@@ -25,7 +25,7 @@ Use the exact values you provided. Example template in `.env.example`.
 
 Alternatively, using `psql` with your non-pooling connection string:
 
-```
+\`\`\`
 psql "${POSTGRES_URL_NON_POOLING}" -f supabase/sql/00_extensions.sql \
   -f supabase/sql/01_users.sql \
   -f supabase/sql/10_todos.sql \
@@ -33,7 +33,7 @@ psql "${POSTGRES_URL_NON_POOLING}" -f supabase/sql/00_extensions.sql \
   -f supabase/sql/30_cash_registers.sql \
   -f supabase/sql/40_orders.sql \
   -f supabase/sql/50_warehouse.sql
-```
+\`\`\`
 
 3) Run the app locally:
 
@@ -44,4 +44,3 @@ Notes
 
 - The `users` table is app-level (demo). For production, prefer Supabase Auth and store only profile data in Postgres.
 - RLS policies are permissive for `todos` (quickstart) and read-only for some tables; writes happen through server-side API using the service role. Tighten policies per your RBAC as needed.
-

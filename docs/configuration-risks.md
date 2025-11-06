@@ -42,4 +42,3 @@ This document outlines potential pitfalls and considerations during configuratio
 - Introduce environment variables for secrets and runtime configurations.
 - Plan API layer and server authorization.
 - Enable image optimization and review performance.
-

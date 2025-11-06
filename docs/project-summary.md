@@ -31,7 +31,7 @@ This document summarizes the project’s architecture, components, dependencies,
   - `hooks/use-mobile.ts` — Responsive behavior for sidebar offcanvas mode
   - `lib/utils.ts` — Class merge utilities
 
-```mermaid
+\`\`\`mermaid
 flowchart LR
   Browser((Browser)) --> NextApp[Next.js App Router]
   NextApp --> RootLayout[RootLayout]
@@ -40,7 +40,7 @@ flowchart LR
   Page --> SidebarProvider
   SidebarProvider --> AppSidebar
   AppSidebar -->|role-permissions| Navigation
-```
+\`\`\`
 
 ## 2) Technical Stack Analysis
 
@@ -61,7 +61,7 @@ flowchart LR
   - `next.config.mjs`: lint and TS errors ignored during build; `images.unoptimized: true`
   - `tsconfig.json`: strict TS, App Router plugin, bundler module resolution
 
-```mermaid
+\`\`\`mermaid
 flowchart TD
   subgraph Build
     PostCSS-->TailwindV4
@@ -69,7 +69,7 @@ flowchart TD
     TypeScript-->NextBuild
   end
   NextBuild-->Vercel((Deployment))
-```
+\`\`\`
 
 ## 3) Functional Overview
 
@@ -88,7 +88,7 @@ flowchart TD
   - Page composition: each page instantiates `SidebarProvider`, `AppSidebar`, then page content
 
 - Data flow
-```mermaid
+\`\`\`mermaid
 sequenceDiagram
   participant U as User
   participant LP as LoginPage
@@ -103,7 +103,7 @@ sequenceDiagram
   AP->>PG: isLocked=true => render LockScreen
   U->>AP: unlock(pin)
   AP-->>PG: isLocked=false => render content
-```
+\`\`\`
 
 - Limitations / technical debt
   - Client-only demo authentication; no real identity provider or persistence
@@ -134,7 +134,7 @@ sequenceDiagram
 
 ## 5) Visual Routing Map
 
-```mermaid
+\`\`\`mermaid
 graph TD
   A[/\/] --> B[/menu/]
   A --> C[/cash-registers/]
@@ -152,9 +152,8 @@ graph TD
   A --> O[/warehouse/products/]
   A --> P[/warehouse/incoming/]
   A --> Q[/warehouse/outgoing/]
-```
+\`\`\`
 
 ## 6) Summary
 
 The project is a Next.js App Router application focused on a role-aware POS system. It employs Tailwind v4 and Radix-based components via Shadcn for a modern UI, and exposes a client-side demo authentication flow. Configuration priorities center on securing auth, enforcing build correctness, optimizing images, and preparing environment variables for future integrations.
-

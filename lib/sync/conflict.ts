@@ -30,4 +30,3 @@ export function resolveConflict(existing: BaseDoc | null, incoming: BaseDoc): Ba
   // Tie-breaker: timestamp
   return inTs >= exTs ? incoming : existing
 }
-

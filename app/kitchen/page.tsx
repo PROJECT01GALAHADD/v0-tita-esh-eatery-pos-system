@@ -25,7 +25,8 @@ export default function KitchenScreen() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadMenu() {
+    let isMounted = true
+    ;(async () => {
       setLoading(true)
       setError(null)
       try {
@@ -38,26 +39,47 @@ export default function KitchenScreen() {
           category: i.category,
           is_available: !!i.is_available,
         }))
-        setItems(items)
+        if (isMounted) setItems(items)
       } catch (e: any) {
-        setError(e?.message || "Failed to load menu")
+        if (isMounted) setError(e?.message || "Failed to load menu")
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
-    }
-    loadMenu()
+    })()
+
     let channel: ReturnType<ReturnType<typeof getSupabaseClient>["channel"]> | null = null
     try {
       const supa = getSupabaseClient()
       channel = supa
         .channel("kitchen-menu-realtime")
         .on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => {
-          loadMenu()
+          ;(async () => {
+            setLoading(true)
+            setError(null)
+            try {
+              const res = await fetch("/api/menu", { cache: "no-store" })
+              const json = await res.json()
+              if (!res.ok) throw new Error(json?.error || "Failed to load menu")
+              const items: KitchenMenuItem[] = (json.items || []).map((i: any) => ({
+                id: i.id,
+                name: i.name,
+                category: i.category,
+                is_available: !!i.is_available,
+              }))
+              if (isMounted) setItems(items)
+            } catch (e: any) {
+              if (isMounted) setError(e?.message || "Failed to load menu")
+            } finally {
+              if (isMounted) setLoading(false)
+            }
+          })()
         })
       channel.subscribe()
     } catch {}
-    // Cleanup must be synchronous; do not return a Promise
+
+    // Cleanup: set flag and unsubscribe from channel
     return () => {
+      isMounted = false
       void channel?.unsubscribe()
     }
   }, [])
@@ -128,7 +150,9 @@ export default function KitchenScreen() {
                   <CardTitle>Orders Queue</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">No itemized order queue yet. This will show incoming dishes once order line items are implemented.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No itemized order queue yet. This will show incoming dishes once order line items are implemented.
+                  </p>
                   <div className="mt-3">
                     <Button variant="outline" disabled>
                       Refresh Queue
@@ -147,7 +171,9 @@ export default function KitchenScreen() {
                 <CardContent>
                   {loading && <p className="text-sm">Loading menu…</p>}
                   {error && <p className="text-sm text-red-600">{error}</p>}
-                  {!loading && byCategory.length === 0 && <p className="text-sm text-muted-foreground">No menu items found.</p>}
+                  {!loading && byCategory.length === 0 && (
+                    <p className="text-sm text-muted-foreground">No menu items found.</p>
+                  )}
                   <div className="space-y-4">
                     {byCategory.map(([cat, list]) => (
                       <div key={cat}>
@@ -157,7 +183,9 @@ export default function KitchenScreen() {
                             <div key={i.id} className="flex items-center justify-between rounded border p-2">
                               <div>
                                 <div className="font-medium">{i.name}</div>
-                                <div className="text-xs text-muted-foreground">{i.is_available ? "Available" : "Unavailable"}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {i.is_available ? "Available" : "Unavailable"}
+                                </div>
                               </div>
                               <Switch checked={i.is_available} onCheckedChange={(v) => toggleAvailability(i.id, v)} />
                             </div>

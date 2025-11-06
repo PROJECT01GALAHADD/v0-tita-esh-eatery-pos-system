@@ -74,4 +74,3 @@ export async function deleteSync(
     await deleteMongo(collection, externalId)
   }
 }
-

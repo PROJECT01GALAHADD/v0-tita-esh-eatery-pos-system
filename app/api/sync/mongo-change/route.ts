@@ -31,4 +31,3 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: err?.message || String(err) }, { status: 500 })
   }
 }
-

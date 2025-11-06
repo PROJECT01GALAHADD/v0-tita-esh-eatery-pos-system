@@ -149,4 +149,3 @@
 - Auth provider decision and password policy?
 - Indexing requirements for `orders`, `menu_items`, `registers`?
 - Error reporting preference (Sentry/other) and PII rules?
-

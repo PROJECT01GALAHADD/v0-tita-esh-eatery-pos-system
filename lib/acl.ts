@@ -22,4 +22,3 @@ export const areaAllowedRoles: Record<AppArea, UserRole[]> = {
 export function hasAccess(user: { role: UserRole } | null | undefined, area: AppArea) {
   return !!user && areaAllowedRoles[area].includes(user.role)
 }
-

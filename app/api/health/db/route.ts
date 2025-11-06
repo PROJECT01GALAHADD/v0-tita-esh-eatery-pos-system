@@ -10,4 +10,3 @@ export async function GET() {
     { status: 500, headers: { "content-type": "application/json" } }
   )
 }
-

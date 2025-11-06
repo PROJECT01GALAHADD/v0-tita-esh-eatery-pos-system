@@ -20,4 +20,3 @@ alter table public.menu_items enable row level security;
 -- Policies to be tightened later; using service role for admin writes
 create policy if not exists "categories_select_anon" on public.categories for select using (true);
 create policy if not exists "menu_items_select_anon" on public.menu_items for select using (true);
-

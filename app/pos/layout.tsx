@@ -8,4 +8,3 @@ export default function PosLayout({
 }) {
   return <CartProvider>{children}</CartProvider>
 }
-
