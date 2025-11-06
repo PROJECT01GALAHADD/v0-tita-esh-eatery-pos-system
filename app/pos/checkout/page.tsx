@@ -10,32 +10,20 @@ import { CreditCard, Wallet, QrCode, Printer, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { hasAccess } from "@/lib/acl"
+import { AccessDenied } from "@/components/access-denied"
 
 export default function CheckoutPage() {
   const { user } = useAuth()
   const router = useRouter()
   const { items, totalPrice, clearCart } = useCart()
+  const [isProcessing, setIsProcessing] = useState(false)
+
   if (!user) return null
 
-  if (user.role !== "cashier_waiter") {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">Checkout is restricted to Cashier accounts.</p>
-            <Button asChild>
-              <Link href="/">Go to Dashboard</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  if (!hasAccess(user, "pos")) {
+    return <AccessDenied />
   }
-
-  const [isProcessing, setIsProcessing] = useState(false)
 
   const confirmOrder = async (method: "cash" | "card" | "mobile") => {
     if (isProcessing) return
@@ -105,15 +93,37 @@ export default function CheckoutPage() {
                 <p className="text-sm text-muted-foreground">Choose payment method</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Button onClick={() => confirmOrder("cash")} className="justify-start" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wallet className="mr-2 h-4 w-4" />}
+                    {isProcessing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Wallet className="mr-2 h-4 w-4" />
+                    )}
                     {isProcessing ? "Processing" : "Cash"}
                   </Button>
-                  <Button onClick={() => confirmOrder("card")} className="justify-start" variant="secondary" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+                  <Button
+                    onClick={() => confirmOrder("card")}
+                    className="justify-start"
+                    variant="secondary"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CreditCard className="mr-2 h-4 w-4" />
+                    )}
                     {isProcessing ? "Processing" : "Card"}
                   </Button>
-                  <Button onClick={() => confirmOrder("mobile")} className="justify-start" variant="outline" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
+                  <Button
+                    onClick={() => confirmOrder("mobile")}
+                    className="justify-start"
+                    variant="outline"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <QrCode className="mr-2 h-4 w-4" />
+                    )}
                     {isProcessing ? "Processing" : "Mobile QR"}
                   </Button>
                 </div>

@@ -1,8 +1,9 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, type ReactNode, useEffect } from "react"
 import { LockScreen } from "./lock-screen"
 import { LoginPage } from "./login-page"
+import { saveSession, clearSession, updateSessionActivity, getSession, isSessionValid } from "@/lib/utils/session"
 
 type UserRole = "administrator" | "manager" | "cashier_waiter" | "kitchen"
 
@@ -21,26 +22,44 @@ interface AuthContextType {
   lock: () => void
   unlock: (pin: string) => boolean
   listUsers: () => Promise<Array<Pick<User, "id" | "username" | "name" | "role">>>
-  createUser: (params: { username: string; name: string; role: UserRole; password: string }) => Promise<{ success: boolean; error?: string }>
+  createUser: (params: { username: string; name: string; role: UserRole; password: string }) => Promise<{
+    success: boolean
+    error?: string
+  }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-type StoredAccount = {
-  id: string
-  username: string
-  name: string
-  role: UserRole
-  password: string
-}
-
-const ACCOUNTS_KEY = "titaesh:accounts" // no longer used; kept for backward compatibility
 
 const LOCK_PIN = "1234"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLocked, setIsLocked] = useState(false)
+
+  useEffect(() => {
+    const session = getSession()
+    if (session && isSessionValid()) {
+      setUser({
+        id: session.id,
+        username: session.username,
+        role: session.role,
+        name: session.name,
+      })
+    } else {
+      clearSession()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const handleActivity = () => updateSessionActivity()
+    window.addEventListener("mousemove", handleActivity)
+    window.addEventListener("keydown", handleActivity)
+    return () => {
+      window.removeEventListener("mousemove", handleActivity)
+      window.removeEventListener("keydown", handleActivity)
+    }
+  }, [user])
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
@@ -52,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const json = await res.json()
       if (!res.ok || !json?.user) return false
       setUser(json.user)
+      saveSession(json.user)
       setIsLocked(false)
       return true
     } catch {
@@ -62,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null)
     setIsLocked(false)
+    clearSession()
   }
 
   const lock = () => {
@@ -91,8 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user || !["administrator", "manager"].includes(user.role)) {
       return { success: false, error: "Only Admin/Manager can create users" }
     }
-    // Allow manager creation for administrators via server route; client restricts to cashier_waiter/kitchen by default UI
-    if (!["cashier_waiter", "kitchen", "manager"].includes(role)) {
+    const validRoles = ["administrator", "manager", "cashier_waiter", "kitchen"]
+    if (!validRoles.includes(role)) {
       return { success: false, error: "Invalid role" }
     }
     try {
@@ -109,12 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Show lock screen if locked
   if (isLocked && user) {
     return <LockScreen onUnlock={unlock} user={user} />
   }
 
-  // Show login page if not authenticated
   if (!user) {
     return <LoginPage onLoginAction={async (username, password) => await login(username, password)} />
   }

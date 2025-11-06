@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSupabaseServer } from "@/lib/supabase"
+import { verifyPassword } from "@/lib/utils/password"
 
 type LoginBody = {
   username: string
@@ -21,10 +22,12 @@ export async function POST(req: Request) {
       .limit(1)
       .single()
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error || !data) {
+      return NextResponse.json({ error: "Invalid username or password" }, { status: 401 })
     }
-    if (!data || data.password !== body.password) {
+
+    const passwordValid = data.password ? verifyPassword(body.password, data.password) : false
+    if (!passwordValid) {
       return NextResponse.json({ error: "Invalid username or password" }, { status: 401 })
     }
 

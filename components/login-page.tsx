@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
-// Demo accounts UI removed; real accounts are auto-seeded
 
 interface LoginPageProps {
   onLoginAction: (username: string, password: string) => Promise<boolean>
@@ -31,15 +30,11 @@ export function LoginPage({ onLoginAction }: LoginPageProps) {
     }
   }
 
-  // Real accounts are auto-created on first load.
-  // Default usernames/passwords:
-  // admin/admin123, manager/mgr123, cashierwaiter/cw123, kitchen/kitchen123
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-red-500 via-yellow-400 to-yellow-300 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8">
-        <Card className="w-full shadow-xl border-green-200 md:col-span-2">
-          <CardHeader className="text-center bg-linear-to-b from-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-red-500 via-yellow-400 to-yellow-300 flex items-center justify-center p-4 w-full">
+      <div className="w-full max-w-md">
+        <Card className="w-full shadow-xl border-0 bg-white">
+          <CardHeader className="text-center bg-white">
             <div className="mx-auto w-20 h-20 mb-4 relative">
               <Image
                 src="/tita-esh-logo.png"
@@ -51,10 +46,10 @@ export function LoginPage({ onLoginAction }: LoginPageProps) {
               />
             </div>
             <CardTitle className="text-3xl font-bold text-red-700">Tita Esh Eatery</CardTitle>
-            <CardDescription className="text-green-700 font-medium">POS System - Since 2004</CardDescription>
-            <p className="text-xs text-gray-600 mt-2">Sign in to access your restaurant management system</p>
+            <CardDescription className="text-gray-600 font-medium">POS System - Since 2004</CardDescription>
+            <p className="text-xs text-gray-500 mt-2">Sign in to access your restaurant management system</p>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 bg-white">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-700 font-semibold">
@@ -66,7 +61,7 @@ export function LoginPage({ onLoginAction }: LoginPageProps) {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="border-green-300 focus:border-red-500"
+                  className="border-gray-300 focus:border-red-500"
                   required
                 />
               </div>
@@ -82,7 +77,7 @@ export function LoginPage({ onLoginAction }: LoginPageProps) {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="border-green-300 focus:border-red-500"
+                    className="border-gray-300 focus:border-red-500"
                     required
                   />
                   <Button

@@ -19,3 +19,5 @@ export function getSupabaseServer() {
   }
   return createClient(url, serviceKey)
 }
+
+export const supabaseAdmin = getSupabaseServer()

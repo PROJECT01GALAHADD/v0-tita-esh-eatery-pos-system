@@ -16,7 +16,9 @@
 - Observability & analytics
   - `@vercel/analytics` available; privacy and error reporting not configured.
 - Data & integrations
-  - MongoDB Atlas wired via `lib/mongodb.ts` and `GET /api/health/db`; data-backed features not implemented yet.
+  - Supabase PostgreSQL wired via `lib/supabase.ts` and `GET /api/health/db`; all data operations use Supabase client.
+  - Real-time subscriptions configured via Supabase channels.
+  - Row Level Security (RLS) policies enforced at the database level.
 
 ## 2) Action Plan With Objectives & Success Metrics
 
@@ -64,7 +66,7 @@
   - Configure image domains; enable Next Image optimization.
 - Week 2
   - Implement auth API (register/login/logout) with sessions.
-  - Create MongoDB schemas: `users`, `roles`, `menu_items`, `orders`, `registers`.
+  - Create Supabase tables: `users`, `roles`, `menu_items`, `orders`, `registers`.
   - Migrate UI to use server-backed auth; remove demo credentials.
 - Week 3
   - Add server-side guards to pages and APIs; 403/404 routes.
@@ -120,32 +122,35 @@
 ## 7) Resources & Responsibilities
 
 - You
-  - Set `MONGODB_URI` for Vercel Production/Preview.
+  - Ensure Supabase credentials are set in Vercel.
   - Decide auth provider (email/password or OAuth/OIDC).
-  - Confirm database names per environment and initial collections.
+  - Confirm table structures and RLS policies.
   - Approve Vercel regions and analytics/privacy preferences.
 - Me
   - Implement code changes (auth APIs, SSR, guards, images, theming).
   - Add CI workflows and quality gates.
-  - Define MongoDB models and indexes.
+  - Define Supabase schemas and RLS policies.
   - Integrate analytics and optional error reporting.
 
 ## 8) Monitoring System
 
 - Health endpoints
-  - `GET /api/health/db` (present); add `GET /api/health/app` for runtime sanity.
+  - `GET /api/health/db` (Supabase connection check); add `GET /api/health/app` for runtime sanity.
 - Metrics & dashboards
   - Vercel Analytics with privacy filters; optional Sentry for errors.
   - CI dashboards for build quality; synthetic checks for health endpoints.
+  - Supabase Dashboard for database metrics and logs.
 - Alerts
   - Error spike alerts; DB connectivity failures; auth rate anomalies.
 - Logs & retention
   - Structured server logs (route, user role, action); retention policies aligned to compliance.
+  - Supabase Database Logs available in Dashboard.
 
 ## Open Questions (for stability in GitHub → Vercel)
 
-- Do you want separate databases per environment (Preview vs Production)?
-- Preferred Vercel region(s) to minimize Atlas latency?
+- Do you want separate Supabase projects per environment (Preview vs Production)?
+- Preferred Vercel region(s) to minimize Supabase latency?
 - Auth provider decision and password policy?
 - Indexing requirements for `orders`, `menu_items`, `registers`?
 - Error reporting preference (Sentry/other) and PII rules?
+- RLS policy strictness (public vs authenticated vs role-based)?

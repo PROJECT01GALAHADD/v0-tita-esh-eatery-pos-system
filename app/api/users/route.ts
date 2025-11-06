@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { getSupabaseServer } from "@/lib/supabase"
+import { hashPassword } from "@/lib/utils/password"
 
 type CreateUserBody = {
   username: string
   name: string
-  role: "manager" | "cashier_waiter" | "kitchen"
+  role: "administrator" | "manager" | "cashier_waiter" | "kitchen"
   password?: string
 }
 
@@ -31,18 +32,23 @@ export async function POST(req: Request) {
     if (!body?.username || !body?.name || !body?.role) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 })
     }
-    if (!( ["manager", "cashier_waiter", "kitchen"] as const ).includes(body.role)) {
+
+    const validRoles = ["administrator", "manager", "cashier_waiter", "kitchen"] as const
+    if (!validRoles.includes(body.role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 })
     }
 
     const supabase = getSupabaseServer()
+
+    const hashedPassword = body.password ? hashPassword(body.password) : null
+
     const { data, error } = await supabase
       .from("users")
       .insert({
         username: body.username,
         name: body.name,
         role: body.role,
-        password: body.password ?? null,
+        password: hashedPassword,
       })
       .select("id")
       .single()
