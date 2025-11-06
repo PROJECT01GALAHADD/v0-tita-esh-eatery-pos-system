@@ -22,3 +22,12 @@ export const areaAllowedRoles: Record<AppArea, UserRole[]> = {
 export function hasAccess(user: { role: UserRole } | null | undefined, area: AppArea) {
   return !!user && areaAllowedRoles[area].includes(user.role)
 }
+
+// Role helpers for consistent checks across components
+export const isAdmin = (role?: UserRole) => role === "administrator"
+export const isManager = (role?: UserRole) => role === "manager"
+export const isCashierWaiter = (role?: UserRole) => role === "cashier_waiter"
+export const isKitchen = (role?: UserRole) => role === "kitchen"
+
+export const canEditOrder = (role?: UserRole) =>
+  isCashierWaiter(role) || isAdmin(role) || isManager(role)

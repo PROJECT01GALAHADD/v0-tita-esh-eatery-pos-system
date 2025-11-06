@@ -44,7 +44,8 @@ export function ProductGrid({ category, searchQuery = "", loading = false, items
             key={p.id}
             className="overflow-hidden transition-all duration-200 hover:scale-105 hover:shadow-md cursor-pointer group"
             onClick={() => {
-              addItem(p)
+              // Ensure Product satisfies required image property for cart
+              addItem({ ...p, image: p.image || "/placeholder.svg" })
               toast.success(`Added ${p.name} to cart`, {
                 description: `Qty: 1 • $${p.price.toFixed(2)}`,
                 action: {

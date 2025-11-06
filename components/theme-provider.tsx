@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 type ThemeProviderProps = {
   children: React.ReactNode
-  attribute?: string
+  attribute?: "class" | "data-theme" | Array<"class" | "data-theme">
   defaultTheme?: string
   enableSystem?: boolean
   disableTransitionOnChange?: boolean

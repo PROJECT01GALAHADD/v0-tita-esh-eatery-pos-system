@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
+import { hasAccess, isCashierWaiter, canEditOrder, isAdmin, isManager } from "@/lib/acl"
 
 const orders = [
   {
@@ -83,8 +84,8 @@ export default function DailyOrdersPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
 
-  // Check permissions - orders accessible by administrator, manager, cashier_waiter, kitchen
-  if (!user || !["administrator", "manager", "cashier_waiter", "kitchen"].includes(user.role)) {
+  // Check permissions using centralized ACL helper
+  if (!hasAccess(user, "orders")) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -116,7 +117,9 @@ export default function DailyOrdersPage() {
   }
 
   // Filter orders for cashier_waiter to show only their orders
-  const filteredOrders = user.role === "cashier_waiter" ? orders.filter((order) => order.waiter === user.name) : orders
+  const filteredOrders = isCashierWaiter(user?.role)
+    ? orders.filter((order) => order.waiter === user?.name)
+    : orders
 
   return (
     <SidebarProvider>
@@ -126,7 +129,7 @@ export default function DailyOrdersPage() {
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <h1 className="text-xl font-semibold">Daily Orders {user.role === "cashier_waiter" ? "- My Orders" : ""}</h1>
+            <h1 className="text-xl font-semibold">Daily Orders {isCashierWaiter(user?.role) ? "- My Orders" : ""}</h1>
           </header>
 
           <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -134,12 +137,10 @@ export default function DailyOrdersPage() {
               <div>
                 <h2 className="text-3xl font-bold tracking-tight">Daily Orders</h2>
                 <p className="text-muted-foreground">
-                  {user.role === "cashier_waiter" ? "Manage your assigned orders" : "Manage today's customer orders"}
-                </p>
-              </div>
-              {(user.role === "cashier_waiter" ||
-                user.role === "administrator" ||
-                user.role === "manager") && (
+                  {isCashierWaiter(user?.role) ? "Manage your assigned orders" : "Manage today's customer orders"}
+              </p>
+            </div>
+              {canEditOrder(user?.role) && (
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -171,7 +172,7 @@ export default function DailyOrdersPage() {
                         </div>
                         <div>
                           <Label htmlFor="waiter">Waiter</Label>
-                          <Select defaultValue={user?.role === "cashier_waiter" ? user?.name : undefined}>
+                          <Select defaultValue={isCashierWaiter(user?.role) ? user?.name : undefined}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select waiter" />
                             </SelectTrigger>
@@ -269,10 +270,10 @@ export default function DailyOrdersPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>{user.role === "cashier_waiter" ? "My Orders" : "Today's Orders"}</CardTitle>
+                <CardTitle>{isCashierWaiter(user?.role) ? "My Orders" : "Today's Orders"}</CardTitle>
                 <CardDescription>
-                  {user.role === "cashier_waiter"
-                    ? `Orders assigned to ${user.name}`
+                  {isCashierWaiter(user?.role)
+                    ? `Orders assigned to ${user?.name ?? "you"}`
                     : `All orders for ${new Date().toLocaleDateString()}`}
                 </CardDescription>
               </CardHeader>
@@ -282,7 +283,7 @@ export default function DailyOrdersPage() {
                     <TableRow>
                       <TableHead>Order ID</TableHead>
                       <TableHead>Table</TableHead>
-                      {user?.role !== "cashier_waiter" && <TableHead>Waiter</TableHead>}
+                      {!isCashierWaiter(user?.role) && <TableHead>Waiter</TableHead>}
                       <TableHead>Items</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Status</TableHead>
@@ -295,7 +296,7 @@ export default function DailyOrdersPage() {
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>{order.table}</TableCell>
-                        {user?.role !== "cashier_waiter" && <TableCell>{order.waiter}</TableCell>}
+                        {!isCashierWaiter(user?.role) && <TableCell>{order.waiter}</TableCell>}
                         <TableCell>{order.items.join(", ")}</TableCell>
                         <TableCell>${order.total.toFixed(2)}</TableCell>
                         <TableCell>
@@ -307,12 +308,12 @@ export default function DailyOrdersPage() {
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {(user?.role === "cashier_waiter" || user?.role === "administrator" || user?.role === "manager") && (
+                            {canEditOrder(user?.role) && (
                               <Button variant="outline" size="sm">
                                 <Edit className="h-4 w-4" />
                               </Button>
                             )}
-                            {(user.role === "administrator" || user.role === "manager") && (
+                            {(isAdmin(user?.role) || isManager(user?.role)) && (
                               <Button variant="outline" size="sm">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
