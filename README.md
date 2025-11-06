@@ -94,7 +94,7 @@ Required keys:
 Client/Server initialization lives in `lib/supabase.ts`.
 
 ### Real-time subscriptions example
-```ts
+\`\`\`ts
 const channel = supabase
   .channel('orders')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
@@ -104,7 +104,7 @@ const channel = supabase
 
 // Unsubscribe when done
 channel.unsubscribe()
-```
+\`\`\`
 
 ### Health Check
 Expose and use a Supabase health endpoint: `GET /api/health/supabase` (returns JSON status). Use this to validate connectivity during deployments.
@@ -125,14 +125,14 @@ SQL files are under `supabase/sql/` and include:
 Apply via Supabase Dashboard → SQL Editor, or Supabase CLI.
 
 Supabase CLI quick reference:
-```bash
+\`\`\`bash
 npm install -g supabase
 supabase login
 supabase link --project-ref <project-ref>
 supabase db pull
 supabase migration new <name>
 supabase db push
-```
+\`\`\`
 
 Row Level Security (RLS) should be enabled per table and policies tightened to match RBAC.
 
@@ -141,19 +141,19 @@ Row Level Security (RLS) should be enabled per table and policies tightened to m
 ## Next.js Telemetry & Build Checks
 - Disable Next.js telemetry in production: set `NEXT_TELEMETRY_DISABLED=1` in Vercel.
 - Route handlers must use valid signatures, e.g.
-  ```ts
+  \`\`\`ts
   export async function PATCH(req: Request, { params }: any) {
     const id = params.id
     // ...
   }
-  ```
+  \`\`\`
 - TypeScript is enforced during builds.
 
 ---
 
 ## Development
 
-```bash
+\`\`\`bash
 # Install dependencies
 npm install
 
@@ -171,10 +171,10 @@ npm run build
 
 # Run production locally
 npm run start
-```
+\`\`\`
 
 ### Database operations
-```bash
+\`\`\`bash
 # Test Supabase connection
 curl http://localhost:3000/api/health/supabase
 
@@ -186,7 +186,7 @@ npx supabase db push
 
 # View logs
 npx supabase logs --db
-```
+\`\`\`
 
 ---
 
