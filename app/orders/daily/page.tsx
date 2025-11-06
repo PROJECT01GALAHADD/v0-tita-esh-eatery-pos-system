@@ -282,7 +282,7 @@ export default function DailyOrdersPage() {
                     <TableRow>
                       <TableHead>Order ID</TableHead>
                       <TableHead>Table</TableHead>
-                      {user.role !== "cashier_waiter" && <TableHead>Waiter</TableHead>}
+                      {user?.role !== "cashier_waiter" && <TableHead>Waiter</TableHead>}
                       <TableHead>Items</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Status</TableHead>
@@ -295,7 +295,7 @@ export default function DailyOrdersPage() {
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>{order.table}</TableCell>
-                        {user.role !== "waiter" && <TableCell>{order.waiter}</TableCell>}
+                        {user?.role !== "cashier_waiter" && <TableCell>{order.waiter}</TableCell>}
                         <TableCell>{order.items.join(", ")}</TableCell>
                         <TableCell>${order.total.toFixed(2)}</TableCell>
                         <TableCell>
@@ -307,7 +307,7 @@ export default function DailyOrdersPage() {
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {(user.role === "waiter" || user.role === "administrator" || user.role === "manager") && (
+                            {(user?.role === "cashier_waiter" || user?.role === "administrator" || user?.role === "manager") && (
                               <Button variant="outline" size="sm">
                                 <Edit className="h-4 w-4" />
                               </Button>
