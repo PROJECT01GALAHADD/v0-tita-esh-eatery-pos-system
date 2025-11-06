@@ -114,7 +114,7 @@ export default function CashRegistersPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Cash Registers</h2>
                 <p className="text-muted-foreground">Monitor all cash register activities and transactions</p>
               </div>
-              {["administrator", "manager"].includes(user.role) && (
+              {["administrator", "manager"].includes(user?.role ?? "") && (
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Register
