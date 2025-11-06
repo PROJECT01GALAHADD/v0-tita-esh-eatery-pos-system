@@ -56,7 +56,10 @@ export default function KitchenScreen() {
         })
       channel.subscribe()
     } catch {}
-    return () => channel?.unsubscribe()
+    // Cleanup must be synchronous; do not return a Promise
+    return () => {
+      void channel?.unsubscribe()
+    }
   }, [])
 
   const byCategory = useMemo(() => {
@@ -172,4 +175,3 @@ export default function KitchenScreen() {
     </SidebarProvider>
   )
 }
-
