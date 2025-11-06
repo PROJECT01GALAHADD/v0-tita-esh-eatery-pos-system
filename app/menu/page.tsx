@@ -257,7 +257,7 @@ export default function MenuPage() {
                           Available
                         </label>
                       </div>
-                      {["administrator", "manager"].includes(user.role) && (
+                      {["administrator", "manager"].includes(user?.role ?? "") && (
                         <Button variant="outline" size="sm">
                           Edit
                         </Button>
