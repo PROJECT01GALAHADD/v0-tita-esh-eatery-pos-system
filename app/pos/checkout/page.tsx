@@ -29,10 +29,12 @@ export default function CheckoutPage() {
     if (isProcessing) return
     setIsProcessing(true)
     try {
+      // Prepare line items for server processing (stock deduction via recipes)
+      const lineItems = items.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
       await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ total_amount: Number(totalPrice.toFixed(2)) }),
+        body: JSON.stringify({ total_amount: Number(totalPrice.toFixed(2)), items: lineItems }),
       })
     } catch (e) {
       // swallow for demo; could show a toast
