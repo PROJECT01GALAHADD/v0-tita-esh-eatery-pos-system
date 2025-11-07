@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { getSupabaseClient } from "@/lib/supabase"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type HealthStatus = { status: string; database?: string; timestamp?: string; error?: string }
 type Stats = { totalOrders: number; totalRevenue: number; activeWaiters: number }
 type ServerConfig = { kitchenHintsEnabled: boolean; realtimeMonitorEnabled: boolean; source?: string }
+type MonitorEvent = { ts: number; source: string; event: string; payload: any }
 
 export default function DeveloperModePage() {
   const { user } = useAuth()
@@ -31,6 +32,10 @@ export default function DeveloperModePage() {
   const [localKitchenHints, setLocalKitchenHints] = useState<boolean>(true)
   const [localRealtimeMonitor, setLocalRealtimeMonitor] = useState<boolean>(false)
   const [serverConfig, setServerConfig] = useState<ServerConfig | null>(null)
+  const [monitorEvents, setMonitorEvents] = useState<MonitorEvent[]>([])
+  const [monitorConnected, setMonitorConnected] = useState<boolean>(false)
+  const kitchenChanRef = useRef<any>(null)
+  const ordersChanRef = useRef<any>(null)
   const supa = useMemo(() => {
     try {
       const c = getSupabaseClient()
@@ -96,6 +101,63 @@ export default function DeveloperModePage() {
     await ch.send({ type: "broadcast", event: "finalized", payload: { at: Date.now() } })
     await ch.unsubscribe()
   }
+
+  // Realtime Monitor: subscribes to kitchen broadcasts and order inserts when enabled
+  useEffect(() => {
+    if (!supa) return
+    // Clean up existing channels first
+    if (kitchenChanRef.current) {
+      try { kitchenChanRef.current.unsubscribe() } catch {}
+      kitchenChanRef.current = null
+    }
+    if (ordersChanRef.current) {
+      try { ordersChanRef.current.unsubscribe() } catch {}
+      ordersChanRef.current = null
+    }
+
+    if (!localRealtimeMonitor) {
+      setMonitorConnected(false)
+      return
+    }
+
+    // Kitchen broadcast monitor
+    const ch = supa.channel("kitchen")
+    kitchenChanRef.current = ch
+    ch.on("broadcast", { event: "processing" }, (payload: any) => {
+      setMonitorEvents((prev) => [
+        { ts: Date.now(), source: "kitchen", event: "processing", payload },
+        ...prev,
+      ])
+    })
+    ch.on("broadcast", { event: "finalized" }, (payload: any) => {
+      setMonitorEvents((prev) => [
+        { ts: Date.now(), source: "kitchen", event: "finalized", payload },
+        ...prev,
+      ])
+    })
+    ch.subscribe()
+
+    // Orders table INSERT monitor
+    const ordersCh = supa
+      .channel("orders-monitor")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload: any) => {
+        setMonitorEvents((prev) => [
+          { ts: Date.now(), source: "orders", event: "INSERT", payload },
+          ...prev,
+        ])
+      })
+    ordersChanRef.current = ordersCh
+    ordersCh.subscribe()
+
+    setMonitorConnected(true)
+
+    return () => {
+      try { ch.unsubscribe() } catch {}
+      try { ordersCh.unsubscribe() } catch {}
+      setMonitorConnected(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localRealtimeMonitor, supa])
 
   return (
     <SidebarProvider>
@@ -163,7 +225,7 @@ export default function DeveloperModePage() {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Feature Toggles</CardTitle>
@@ -212,6 +274,44 @@ export default function DeveloperModePage() {
                       <pre className="bg-muted px-2 py-1 rounded-md overflow-x-auto">{JSON.stringify(serverConfig, null, 2)}</pre>
                     ) : (
                       <span className="text-muted-foreground">No server config detected.</span>
+                    )}
+                  </div>
+              </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Realtime Monitor</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span>Subscriptions</span>
+                    <Badge className={monitorConnected ? "bg-green-600" : "bg-muted"}>
+                      {monitorConnected ? "Connected" : "Disabled"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Events Captured</span>
+                    <Badge variant="outline">{monitorEvents.length}</Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setMonitorEvents([])}>Clear</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setLocalRealtimeMonitor(true)}>Enable</Button>
+                    <Button variant="outline" size="sm" onClick={() => setLocalRealtimeMonitor(false)}>Disable</Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Shows `kitchen` broadcasts and `orders` inserts.</div>
+                  <div className="max-h-64 overflow-y-auto rounded-md border bg-muted/40 p-2">
+                    {monitorEvents.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No events yet.</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {monitorEvents.map((e, idx) => (
+                          <li key={`${e.ts}-${idx}`} className="text-xs">
+                            <div className="font-medium">[{new Date(e.ts).toLocaleTimeString()}] {e.source} · {e.event}</div>
+                            <pre className="whitespace-pre-wrap break-words">{JSON.stringify(e.payload, null, 2)}</pre>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 </CardContent>

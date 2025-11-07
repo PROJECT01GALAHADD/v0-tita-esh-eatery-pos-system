@@ -21,7 +21,7 @@ import Image from "next/image"
 
 // Define permissions for each role
 const rolePermissions = {
-  administrator: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers", "pos"],
+  administrator: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers", "pos", "developer"],
   manager: ["dashboard", "data", "warehouse", "menu", "orders", "cash-registers", "pos"],
   cashier_waiter: ["dashboard", "orders", "cash-registers", "menu", "pos"],
   // Kitchen role: limited to dashboard overview, kitchen screen, inventory, menu
@@ -71,6 +71,12 @@ const menuItems = [
     permission: "kitchen",
   },
   {
+    title: "Developer Mode",
+    icon: Lock,
+    url: "/developer",
+    permission: "developer",
+  },
+  {
     title: "Menu",
     icon: MenuSquare,
     url: "/menu",
@@ -107,7 +113,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="relative w-10 h-10 shrink-0">
             <Image
-              src="/tita-esh-logo.png"
+              src="/app/tita-esh-logo.png"
               alt="Tita Esh Eatery Logo"
               width={40}
               height={40}
