@@ -21,7 +21,14 @@ export function ProtectedRoute({ area, children, fallback }: ProtectedRouteProps
   if (!user) return null
 
   if (!hasAccess(user, area)) {
-    return fallback || <AccessDenied area={area} />
+    return (
+      fallback || (
+        <AccessDenied
+          title="Access Denied"
+          message={`You don't have permission to access the ${area} area.`}
+        />
+      )
+    )
   }
 
   return <>{children}</>

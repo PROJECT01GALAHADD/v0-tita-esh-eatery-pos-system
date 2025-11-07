@@ -33,3 +33,8 @@ next-env.d.ts
 /external/*
 !/external/.gitkeep
 !/external/README.md
+
+/net-commander
+
+# OpenMemory - IDE/Assistant specific rules
+.trae/rules/openmemory.md

@@ -13,7 +13,14 @@ type ProductLike = { id: string; name: string; price: number; image?: string; ca
 
 export function ProductGrid({ category, searchQuery = "", loading = false, items }: { category: string; searchQuery?: string; loading?: boolean; items?: ProductLike[] }) {
   const { addItem, decrement } = useCart()
-  const source = items && items.length ? items : products
+  const productList: ProductLike[] = products.map((p) => ({
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    image: p.image,
+    category: p.category,
+  }))
+  const source: ProductLike[] = items && items.length ? items : productList
   const filtered = source.filter((p) => {
     const matchesCategory = category === "All" ? true : p.category === category
     const matchesSearch = searchQuery.trim()
