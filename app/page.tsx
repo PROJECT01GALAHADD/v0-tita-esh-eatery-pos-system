@@ -182,7 +182,11 @@ export default function Dashboard() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={(p: { name?: string; percent?: number }) => `${p.name ?? ""} ${(((p.percent ?? 0) * 100).toFixed(0))}%`}
+                          label={(props: unknown) => {
+                            const { name, percent } = props as { name?: string; percent?: number }
+                            const pct = Math.round(((percent ?? 0) * 100))
+                            return `${name ?? ""} ${pct}%`
+                          }}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
