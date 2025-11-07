@@ -25,12 +25,15 @@ jobs:
 
       - name: Run deployment verification
         env:
-          BASE_URL: ${{ github.event.inputs.base_url || secrets.DEPLOY_BASE_URL }}
+          INPUT_BASE_URL: ${{ github.event.inputs.base_url }}
+          SECRET_BASE_URL: ${{ secrets.DEPLOY_BASE_URL }}
         run: |
+          BASE_URL="${INPUT_BASE_URL:-$SECRET_BASE_URL}"
           if [ -z "$BASE_URL" ]; then
-            echo "ERROR: BASE_URL is not set. Provide via workflow_dispatch input 'base_url' or set GitHub secret 'DEPLOY_BASE_URL'."
-            exit 1
+            # Fallback to production app path
+            BASE_URL="https://titaesh-pos.vercel.app/app"
+            echo "BASE_URL not provided; using fallback $BASE_URL"
+          else
+            echo "Verifying deployment at $BASE_URL"
           fi
-          echo "Verifying deployment at $BASE_URL"
-          node scripts/verify-deployment.mjs --base "$BASE_URL" --timeout 30000 --check /,/api/health/supabase
-
+          node scripts/verify-deployment.mjs --base "$BASE_URL" --timeout 30000 --check /,/api/health/supabase,/api/users
