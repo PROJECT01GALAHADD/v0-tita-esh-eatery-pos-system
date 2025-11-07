@@ -15,7 +15,13 @@ const PROTECTED_ROUTES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for public routes
+  // Redirect bare root to basePath '/app' to avoid 404 on production domain
+  if (pathname === "/") {
+    const url = new URL("/app", request.url)
+    return NextResponse.redirect(url)
+  }
+
+  // Skip middleware for public routes (except root which we redirect above)
   if (pathname.startsWith("/api/auth") || pathname.startsWith("/api/health") || PUBLIC_ROUTES.includes(pathname)) {
     return NextResponse.next()
   }
