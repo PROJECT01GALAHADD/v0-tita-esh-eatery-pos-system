@@ -1,0 +1,36 @@
+name: Verify Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL of deployed app (e.g., https://titaesh-pos.vercel.app)"
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run deployment verification
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || secrets.DEPLOY_BASE_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            echo "ERROR: BASE_URL is not set. Provide via workflow_dispatch input 'base_url' or set GitHub secret 'DEPLOY_BASE_URL'."
+            exit 1
+          fi
+          echo "Verifying deployment at $BASE_URL"
+          node scripts/verify-deployment.mjs --base "$BASE_URL" --timeout 30000 --check /,/api/health/supabase
+
