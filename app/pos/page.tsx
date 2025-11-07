@@ -11,6 +11,7 @@ import { CategorySidebar } from "@/components/pos/category-sidebar"
 import { ProductGrid } from "@/components/pos/product-grid"
 import { CartSidebar } from "@/components/pos/cart-sidebar"
 import type { Category } from "@/lib/pos/products"
+import { createHolographicStyle, DEFAULT_HOLOGRAPHIC_CONFIG } from "@/lib/ui/holographic"
 
 export default function PosPage() {
   const { user } = useAuth()
@@ -69,7 +70,10 @@ export default function PosPage() {
 
   return (
     <CartProvider>
-      <div className="min-h-screen p-4 md:p-6">
+      {/* Fixed holographic background behind scrolling content */}
+      <div className="fixed inset-0 -z-10" style={createHolographicStyle(DEFAULT_HOLOGRAPHIC_CONFIG)} />
+
+      <div className="min-h-screen p-4 md:p-6 scroll-smooth">
         <div className="grid gap-4 md:grid-cols-12">
           <div className="md:col-span-3">
             <CategorySidebar
