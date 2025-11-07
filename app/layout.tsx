@@ -12,6 +12,18 @@ export const metadata: Metadata = {
   title: "Tita Esh Eatery POS System - Restaurant Management",
   description: "Complete restaurant management system for Tita Esh Eatery - POS, Orders, Inventory & More",
   generator: "v0.app",
+  icons: {
+    icon: "/app/tita-esh-logo.png",
+    shortcut: "/app/tita-esh-logo.png",
+    apple: "/app/tita-esh-logo.png",
+  },
+  manifest: "/app/manifest.json",
+  themeColor: "#b91c1c",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Tita Esh Eatery POS",
+  },
 }
 
 export const viewport: Viewport = {

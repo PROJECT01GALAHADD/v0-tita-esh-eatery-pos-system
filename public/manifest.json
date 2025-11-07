@@ -1,0 +1,24 @@
+{
+  "name": "Tita Esh Eatery POS",
+  "short_name": "Tita Esh POS",
+  "start_url": "/app",
+  "scope": "/app",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "description": "Restaurant management system for Tita Esh Eatery",
+  "icons": [
+    {
+      "src": "/app/tita-esh-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app/tita-esh-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

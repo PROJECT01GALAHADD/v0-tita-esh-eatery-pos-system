@@ -37,7 +37,7 @@ export function LoginPage({ onLoginAction }: LoginPageProps) {
           <CardHeader className="text-center bg-white">
             <div className="mx-auto w-20 h-20 mb-4 relative">
               <Image
-                src="/tita-esh-logo.png"
+                src="/app/tita-esh-logo.png"
                 alt="Tita Esh Eatery Logo"
                 width={80}
                 height={80}
