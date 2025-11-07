@@ -7,7 +7,8 @@
     "dev": "next dev -p 5000 -H 0.0.0.0",
     "lint": "eslint .",
     "start": "next start -p 5000 -H 0.0.0.0",
-    "verify:deployment": "node scripts/verify-deployment.mjs"
+    "verify:deployment": "node scripts/verify-deployment.mjs",
+    "seed:users": "node scripts/seed-users.mjs"
   },
   "dependencies": {
     "@aws-sdk/credential-provider-web-identity": "latest",
